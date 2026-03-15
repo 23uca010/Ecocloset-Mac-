@@ -1,0 +1,1071 @@
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
+import { Link, useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabaseClient';
+import { 
+  ArrowLeft, 
+  Camera, 
+  Upload, 
+  X, 
+  Plus, 
+  Package, 
+  Tag, 
+  DollarSign, 
+  MapPin, 
+  User, 
+  Heart, 
+  Recycle, 
+  Gift, 
+  CheckCircle, 
+  AlertCircle,
+  Image as ImageIcon
+} from 'lucide-react';
+
+const SellSwap = () => {
+  const { isAuthenticated, user } = useAuth();
+  const navigate = useNavigate();
+  const [userItems, setUserItems] = useState([]);
+  const [loadingItems, setLoadingItems] = useState(true);
+  const [showAddForm, setShowAddForm] = useState(true);
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    category: '',
+    size: '',
+    color: '',
+    brand: '',
+    condition: '',
+    type: 'swap',
+    price: '',
+    swapPreferences: {
+      categories: [],
+      sizes: [],
+      colors: [],
+      notes: ''
+    },
+    donationInfo: {
+      preferredNGO: '',
+      pickupAvailable: false,
+      pickupAddress: {
+        street: '',
+        city: '',
+        state: '',
+        zipCode: ''
+      }
+    },
+    images: []
+  });
+  
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [previewImages, setPreviewImages] = useState([]);
+
+  const categories = [
+    'shirts', 'pants', 'dresses', 'jackets', 'shoes', 'accessories', 'other'
+  ];
+
+  const sizes = ['xs', 's', 'm', 'l', 'xl', 'xxl', 'custom'];
+
+  const conditions = ['new', 'like_new', 'good', 'fair', 'poor'];
+
+  const itemTypes = ['swap', 'donation', 'both'];
+
+  const swapCategories = ['shirts', 'pants', 'dresses', 'jackets', 'shoes', 'accessories'];
+
+  const swapSizes = ['xs', 's', 'm', 'l', 'xl', 'xxl', 'custom'];
+
+  const swapColors = ['black', 'white', 'red', 'blue', 'green', 'yellow', 'pink', 'purple', 'orange', 'brown', 'gray', 'navy'];
+
+  const ngoOptions = [
+    'Green Earth Foundation',
+    'Helping Hands NGO',
+    'Women Empowerment Initiative',
+    'Rural Development Trust',
+    'Children\'s Future Foundation',
+    'Sustainable Fashion Collective'
+  ];
+
+  // Fetch user's items
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      fetchUserItems();
+    } else {
+      setUserItems([]);
+      setLoadingItems(false);
+    }
+  }, [isAuthenticated, user]);
+
+  const fetchUserItems = async () => {
+    try {
+      setLoadingItems(true);
+      const { data, error } = await supabase
+        .from('items')
+        .select('*')
+        .eq('owner_id', user.id)
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching user items:', error);
+      } else {
+        setUserItems(data || []);
+      }
+    } catch (error) {
+      console.error('Error fetching user items:', error);
+    } finally {
+      setLoadingItems(false);
+    }
+  };
+
+  const deleteItem = async (itemId) => {
+    try {
+      const { error } = await supabase
+        .from('items')
+        .delete()
+        .eq('id', itemId);
+      
+      if (error) {
+        console.error('Error deleting item:', error);
+        alert('Error deleting item. Please try again.');
+      } else {
+        setUserItems(prev => prev.filter(item => item.id !== itemId));
+      }
+    } catch (error) {
+      console.error('Error deleting item:', error);
+      alert('Error deleting item. Please try again.');
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    
+    if (name.includes('.')) {
+      const [parent, child] = name.split('.');
+      setFormData(prev => ({
+        ...prev,
+        [parent]: {
+          ...prev[parent],
+          [child]: type === 'checkbox' ? checked : value
+        }
+      }));
+    } else if (name.includes('swapPreferences.')) {
+      const field = name.replace('swapPreferences.', '');
+      if (field === 'categories' || field === 'sizes' || field === 'colors') {
+        if (checked) {
+          setFormData(prev => ({
+            ...prev,
+            swapPreferences: {
+              ...prev.swapPreferences,
+              [field]: [...prev.swapPreferences[field], value]
+            }
+          }));
+        } else {
+          setFormData(prev => ({
+            ...prev,
+            swapPreferences: {
+              ...prev.swapPreferences,
+              [field]: prev.swapPreferences[field].filter(item => item !== value)
+            }
+          }));
+        }
+      } else {
+        setFormData(prev => ({
+          ...prev,
+          swapPreferences: {
+            ...prev.swapPreferences,
+            [field]: value
+          }
+        }));
+      }
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: type === 'checkbox' ? checked : value
+      }));
+    }
+  };
+
+  const handleImageUpload = (e) => {
+    const files = Array.from(e.target.files);
+    const newImages = files.map(file => ({
+      file,
+      preview: URL.createObjectURL(file),
+      id: Date.now() + Math.random()
+    }));
+    
+    setPreviewImages(prev => [...prev, ...newImages].slice(0, 5));
+    setFormData(prev => ({
+      ...prev,
+      images: [...prev.images, ...newImages]
+    }));
+  };
+
+  const removeImage = (imageId) => {
+    setPreviewImages(prev => prev.filter(img => img.id !== imageId));
+    setFormData(prev => ({
+      ...prev,
+      images: prev.images.filter(img => img.id !== imageId)
+    }));
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    
+    if (!formData.title.trim()) newErrors.title = 'Title is required';
+    if (!formData.description.trim()) newErrors.description = 'Description is required';
+    if (!formData.category) newErrors.category = 'Category is required';
+    if (!formData.size) newErrors.size = 'Size is required';
+    if (!formData.color) newErrors.color = 'Color is required';
+    if (!formData.condition) newErrors.condition = 'Condition is required';
+    if (!formData.type) newErrors.type = 'Type is required';
+    
+    if (formData.type === 'sell' && !formData.price) {
+      newErrors.price = 'Price is required for selling';
+    }
+    
+    if (formData.type === 'donation' && !formData.donationInfo.preferredNGO) {
+      newErrors.preferredNGO = 'Preferred NGO is required for donation';
+    }
+    
+    if (formData.type === 'swap' && formData.swapPreferences.categories.length === 0) {
+      newErrors.swapCategories = 'At least one swap category preference is required';
+    }
+    
+    if (formData.images.length === 0) {
+      newErrors.images = 'At least one image is required';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+    
+    if (!validateForm()) {
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      alert('Item listed successfully!');
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Error listing item:', error);
+      alert('Failed to list item. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Authentication Required</h2>
+          <p className="text-gray-600 mb-6">Please login to list items for sale or swap.</p>
+          <Link
+            to="/login"
+            className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors"
+          >
+            Login to Continue
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white shadow-sm border-b">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center">
+              <Link to="/dashboard" className="flex items-center text-gray-600 hover:text-gray-900">
+                <ArrowLeft className="h-5 w-5 mr-2" />
+                Back to Dashboard
+              </Link>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Recycle className="h-6 w-6 text-green-600" />
+              <h1 className="text-xl font-bold text-gray-900">List Item for Sell/Swap</h1>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Toggle Buttons */}
+        <div className="flex space-x-4 mb-8">
+          <button
+            type="button"
+            onClick={() => setShowAddForm(true)}
+            className={`px-6 py-3 rounded-lg font-medium transition-colors ${
+              showAddForm 
+                ? 'bg-green-600 text-white' 
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            <Plus className="h-5 w-5 mr-2" />
+            Add New Item
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowAddForm(false)}
+            className={`px-6 py-3 rounded-lg font-medium transition-colors ${
+              !showAddForm 
+                ? 'bg-blue-600 text-white' 
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            <Package className="h-5 w-5 mr-2" />
+            Your Items ({userItems.length})
+          </button>
+        </div>
+
+        {/* Your Items Section */}
+        {!showAddForm && (
+          <div className="bg-white rounded-lg shadow p-6 mb-8">
+            <h2 className="text-xl font-bold text-gray-900 mb-6">Your Listed Items</h2>
+            
+            {loadingItems ? (
+              <div className="text-center py-8">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-r-2 border-green-600"></div>
+                <p className="mt-4 text-gray-600">Loading your items...</p>
+              </div>
+            ) : userItems.length === 0 ? (
+              <div className="text-center py-8">
+                <Package className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No items listed yet</h3>
+                <p className="text-gray-600">Start by adding your first item for sell or swap!</p>
+                <button
+                  type="button"
+                  onClick={() => setShowAddForm(true)}
+                  className="mt-4 bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors font-medium"
+                >
+                  <Plus className="h-5 w-5 mr-2" />
+                  Add Your First Item
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {userItems.map((item) => (
+                  <div key={item.id} className="bg-white border rounded-lg shadow-sm hover:shadow-md transition-shadow p-4">
+                    <div className="flex justify-between items-start mb-4">
+                      <h3 className="text-lg font-semibold text-gray-900">{item.title}</h3>
+                      <div className="flex space-x-2">
+                        <span className={`px-2 py-1 text-xs rounded-full ${
+                          item.type === 'swap' ? 'bg-blue-600 text-white' :
+                          item.type === 'donation' ? 'bg-green-600 text-white' :
+                          'bg-purple-600 text-white'
+                        }`}>
+                          {item.type}
+                        </span>
+                        <button
+                          onClick={() => deleteItem(item.id)}
+                          className="text-red-500 hover:text-red-700 transition-colors"
+                          title="Delete item"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <p className="text-sm text-gray-600 line-clamp-2">{item.description}</p>
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-1">
+                          <p className="text-sm text-gray-600">
+                            <span className="font-medium">Category:</span> {item.category}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            <span className="font-medium">Size:</span> {item.size}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            <span className="font-medium">Condition:</span> {item.condition}
+                          </p>
+                        </div>
+                        
+                        <div className="text-right">
+                          <p className="text-lg font-bold text-green-600">₹{item.price}</p>
+                          <p className="text-sm text-gray-500">{item.brand}</p>
+                        </div>
+                      </div>
+                      
+                      {item.images && item.images.length > 0 && (
+                        <div className="grid grid-cols-3 gap-2 mt-3">
+                          {item.images.slice(0, 3).map((image, index) => (
+                            <img
+                              key={index}
+                              src={image}
+                              alt={item.title}
+                              className="w-full h-20 object-cover rounded"
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Add New Item Form */}
+        {showAddForm && (
+          <form onSubmit={handleSubmit} className="space-y-8">
+          
+          {/* Images Section */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Item Images</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+              {previewImages.map((image) => (
+                <div key={image.id} className="relative group">
+                  <img
+                    src={image.preview}
+                    alt="Preview"
+                    className="w-full h-32 object-cover rounded-lg border"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeImage(image.id)}
+                    className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
+              
+              {previewImages.length < 5 && (
+                <label className="border-2 border-dashed border-gray-300 rounded-lg p-4 cursor-pointer hover:border-green-500 transition-colors">
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
+                  <div className="text-center">
+                    <Camera className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                    <p className="text-sm text-gray-600">Add Photo</p>
+                  </div>
+                </label>
+              )}
+            </div>
+            {errors.images && (
+              <p className="text-red-500 text-sm mt-2">{errors.images}</p>
+            )}
+          </div>
+
+          {/* Basic Information */}
+          <div className="bg-white rounded-xl shadow-lg p-8 border border-gray-100">
+            <div className="flex items-center mb-6">
+              <div className="bg-green-100 p-3 rounded-lg mr-4">
+                <Tag className="h-6 w-6 text-green-600" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">Basic Information</h2>
+                <p className="text-sm text-gray-500">Tell us about your item</p>
+              </div>
+            </div>
+            
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Item Title *
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    name="title"
+                    value={formData.title}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all pl-12"
+                    placeholder="e.g., Vintage Denim Jacket"
+                  />
+                  <Tag className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                </div>
+                {errors.title && (
+                  <p className="text-red-500 text-sm mt-2 flex items-center">
+                    <AlertCircle className="h-4 w-4 mr-1" />
+                    {errors.title}
+                  </p>
+                )}
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Brand
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      name="brand"
+                      value={formData.brand}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all pl-12"
+                      placeholder="e.g., Levi's, H&M"
+                    />
+                    <Package className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Price *
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      name="price"
+                      value={formData.price}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all pl-12"
+                      placeholder="0.00"
+                    />
+                    <DollarSign className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                  </div>
+                  {errors.price && (
+                    <p className="text-red-500 text-sm mt-2 flex items-center">
+                      <AlertCircle className="h-4 w-4 mr-1" />
+                      {errors.price}
+                    </p>
+                  )}
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Description *
+                </label>
+                <div className="relative">
+                  <textarea
+                    name="description"
+                    value={formData.description}
+                    onChange={handleInputChange}
+                    rows={4}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all resize-none"
+                    placeholder="Describe your item, its condition, and any special features..."
+                  />
+                </div>
+                {errors.description && (
+                  <p className="text-red-500 text-sm mt-2 flex items-center">
+                    <AlertCircle className="h-4 w-4 mr-1" />
+                    {errors.description}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Item Details */}
+          <div className="bg-white rounded-xl shadow-lg p-8 border border-gray-100">
+            <div className="flex items-center mb-6">
+              <div className="bg-blue-100 p-3 rounded-lg mr-4">
+                <Package className="h-6 w-6 text-blue-600" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">Item Details</h2>
+                <p className="text-sm text-gray-500">Specify the details of your item</p>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Category *
+                </label>
+                <div className="relative">
+                  <select
+                    name="category"
+                    value={formData.category}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all appearance-none bg-white"
+                  >
+                    <option value="">Select Category</option>
+                    {categories.map(cat => (
+                      <option key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</option>
+                    ))}
+                  </select>
+                  <div className="absolute right-4 top-3.5 pointer-events-none">
+                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
+                {errors.category && (
+                  <p className="text-red-500 text-sm mt-2 flex items-center">
+                    <AlertCircle className="h-4 w-4 mr-1" />
+                    {errors.category}
+                  </p>
+                )}
+              </div>
+              
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Size
+                </label>
+                <div className="relative">
+                  <select
+                    name="size"
+                    value={formData.size}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all appearance-none bg-white"
+                  >
+                    <option value="">Select Size</option>
+                    {sizes.map(size => (
+                      <option key={size} value={size}>{size}</option>
+                    ))}
+                  </select>
+                  <div className="absolute right-4 top-3.5 pointer-events-none">
+                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Color
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    name="color"
+                    value={formData.color}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                    placeholder="e.g., Blue, Black"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Condition *
+                </label>
+                <div className="relative">
+                  <select
+                    name="condition"
+                    value={formData.condition}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all appearance-none bg-white"
+                  >
+                    <option value="">Select Condition</option>
+                    {conditions.map(condition => (
+                      <option key={condition} value={condition}>{condition.charAt(0).toUpperCase() + condition.slice(1)}</option>
+                    ))}
+                  </select>
+                  <div className="absolute right-4 top-3.5 pointer-events-none">
+                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
+                {errors.condition && (
+                  <p className="text-red-500 text-sm mt-2 flex items-center">
+                    <AlertCircle className="h-4 w-4 mr-1" />
+                    {errors.condition}
+                  </p>
+                )}
+              </div>
+              
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Listing Type *
+                </label>
+                <div className="relative">
+                  <select
+                    name="type"
+                    value={formData.type}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all appearance-none bg-white"
+                  >
+                    <option value="swap">For Swap</option>
+                    <option value="sell">For Sale</option>
+                    <option value="both">For Swap & Sale</option>
+                  </select>
+                  <div className="absolute right-4 top-3.5 pointer-events-none">
+                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Submit Button */}
+                <select
+                  name="size"
+                  value={formData.size}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                >
+                  <option value="">Select Size</option>
+                  {sizes.map(size => (
+                    <option key={size} value={size}>{size.toUpperCase()}</option>
+                  ))}
+                </select>
+                {errors.size && (
+                  <p className="text-red-500 text-sm mt-1">{errors.size}</p>
+                )}
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Color *
+                </label>
+                <div className="flex justify-end space-x-4">
+            <Link
+              to="/dashboard"
+              className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              Cancel
+            </Link>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+            >
+              {isSubmitting ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Listing...
+                </>
+              ) : (
+                <>
+                  <Package className="h-4 w-4 mr-2" />
+                  List Item
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default SellSwap;
+
+                <input
+                  type="text"
+                  name="color"
+                  value={formData.color}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  placeholder="e.g., Blue, Black, Red"
+                />
+                {errors.color && (
+                  <p className="text-red-500 text-sm mt-1">{errors.color}</p>
+                )}
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Condition *
+                </label>
+                <select
+                  name="condition"
+                  value={formData.condition}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                >
+                  <option value="">Select Condition</option>
+                  {conditions.map(condition => (
+                    <option key={condition} value={condition}>
+                      {condition.charAt(0).toUpperCase() + condition.slice(1).replace('_', ' ')}
+                    </option>
+                  ))}
+                </select>
+                {errors.condition && (
+                  <p className="text-red-500 text-sm mt-1">{errors.condition}</p>
+                )}
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Type *
+                </label>
+                <select
+                  name="type"
+                  value={formData.type}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                >
+                  {itemTypes.map(type => (
+                    <option key={type} value={type}>
+                      {type.charAt(0).toUpperCase() + type.slice(1)}
+                    </option>
+                  ))}
+                </select>
+                {errors.type && (
+                  <p className="text-red-500 text-sm mt-1">{errors.type}</p>
+                )}
+              </div>
+              
+              {(formData.type === 'sell' || formData.type === 'both') && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Price (₹) *
+                  </label>
+                  <input
+                    type="number"
+                    name="price"
+                    value={formData.price}
+                    onChange={handleInputChange}
+                    min="0"
+                    step="50"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    placeholder="500"
+                  />
+                  {errors.price && (
+                    <p className="text-red-500 text-sm mt-1">{errors.price}</p>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Swap Preferences */}
+          {(formData.type === 'swap' || formData.type === 'both') && (
+            <div className="bg-white rounded-lg shadow p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Swap Preferences</h2>
+              
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Preferred Categories *
+                </label>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {swapCategories.map(category => (
+                    <label key={category} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        name="swapPreferences.categories"
+                        value={category}
+                        checked={formData.swapPreferences.categories.includes(category)}
+                        onChange={handleInputChange}
+                        className="mr-2"
+                      />
+                      <span className="text-sm">{category.charAt(0).toUpperCase() + category.slice(1)}</span>
+                    </label>
+                  ))}
+                </div>
+                {errors.swapCategories && (
+                  <p className="text-red-500 text-sm mt-1">{errors.swapCategories}</p>
+                )}
+              </div>
+              
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Preferred Sizes
+                </label>
+                <div className="grid grid-cols-4 gap-3">
+                  {swapSizes.map(size => (
+                    <label key={size} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        name="swapPreferences.sizes"
+                        value={size}
+                        checked={formData.swapPreferences.sizes.includes(size)}
+                        onChange={handleInputChange}
+                        className="mr-2"
+                      />
+                      <span className="text-sm">{size.toUpperCase()}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Preferred Colors
+                </label>
+                <div className="grid grid-cols-3 gap-3">
+                  {swapColors.map(color => (
+                    <label key={color} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        name="swapPreferences.colors"
+                        value={color}
+                        checked={formData.swapPreferences.colors.includes(color)}
+                        onChange={handleInputChange}
+                        className="mr-2"
+                      />
+                      <span className="text-sm">{color.charAt(0).toUpperCase() + color.slice(1)}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Additional Notes
+                </label>
+                <textarea
+                  name="swapPreferences.notes"
+                  value={formData.swapPreferences.notes}
+                  onChange={handleInputChange}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  placeholder="Any specific requirements or preferences for swaps..."
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Donation Information */}
+          {(formData.type === 'donation' || formData.type === 'both') && (
+            <div className="bg-white rounded-lg shadow p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Donation Information</h2>
+              
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Preferred NGO *
+                </label>
+                <select
+                  name="donationInfo.preferredNGO"
+                  value={formData.donationInfo.preferredNGO}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                >
+                  <option value="">Select NGO</option>
+                  {ngoOptions.map(ngo => (
+                    <option key={ngo} value={ngo}>{ngo}</option>
+                  ))}
+                </select>
+                {errors.preferredNGO && (
+                  <p className="text-red-500 text-sm mt-1">{errors.preferredNGO}</p>
+                )}
+              </div>
+              
+              <div className="mb-4">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    name="donationInfo.pickupAvailable"
+                    checked={formData.donationInfo.pickupAvailable}
+                    onChange={handleInputChange}
+                    className="mr-2"
+                  />
+                  <span className="text-sm font-medium text-gray-700">Pickup Available</span>
+                </label>
+              </div>
+              
+              {formData.donationInfo.pickupAvailable && (
+                <div className="border-t pt-4">
+                  <h3 className="text-md font-medium text-gray-900 mb-4">Pickup Address</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Street Address
+                      </label>
+                      <input
+                        type="text"
+                        name="donationInfo.pickupAddress.street"
+                        value={formData.donationInfo.pickupAddress.street}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        placeholder="123 Main St"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        City
+                      </label>
+                      <input
+                        type="text"
+                        name="donationInfo.pickupAddress.city"
+                        value={formData.donationInfo.pickupAddress.city}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        placeholder="Mumbai"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        State
+                      </label>
+                      <input
+                        type="text"
+                        name="donationInfo.pickupAddress.state"
+                        value={formData.donationInfo.pickupAddress.state}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        placeholder="Maharashtra"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        ZIP Code
+                      </label>
+                      <input
+                        type="text"
+                        name="donationInfo.pickupAddress.zipCode"
+                        value={formData.donationInfo.pickupAddress.zipCode}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        placeholder="400001"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Submit Button */}
+          <div className="flex justify-end space-x-4">
+            <Link
+              to="/dashboard"
+              className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              Cancel
+            </Link>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+            >
+              {isSubmitting ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Listing...
+                </>
+              ) : (
+                <>
+                  <Package className="h-4 w-4 mr-2" />
+                  List Item
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default SellSwap;

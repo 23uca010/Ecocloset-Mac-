@@ -1,0 +1,225 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoCloset QR Codes - All Options</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #16a34a;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        .subtitle {
+            text-align: center;
+            color: #6b7280;
+            margin-bottom: 30px;
+            font-size: 1.2em;
+        }
+        .qr-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        .qr-box {
+            text-align: center;
+            padding: 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            background: #f9fafb;
+        }
+        .qr-box h3 {
+            color: #374151;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+        .qr-box img {
+            border: 4px solid #16a34a;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 15px;
+        }
+        .url {
+            background: #f3f4f6;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-family: monospace;
+            color: #374151;
+            word-break: break-all;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+        .description {
+            color: #6b7280;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        .download-btn {
+            background: #16a34a;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+            margin: 5px;
+        }
+        .download-btn:hover {
+            background: #15803d;
+        }
+        .troubleshooting {
+            background: #fef3c7;
+            border: 2px solid #f59e0b;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .troubleshooting h3 {
+            color: #d97706;
+            margin-bottom: 15px;
+        }
+        .troubleshooting ul {
+            color: #92400e;
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .troubleshooting li {
+            margin-bottom: 8px;
+        }
+        .ngrok-setup {
+            background: #dbeafe;
+            border: 2px solid #3b82f6;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .ngrok-setup h3 {
+            color: #1d4ed8;
+            margin-bottom: 15px;
+        }
+        .ngrok-setup code {
+            background: #f3f4f6;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .status {
+            background: #ecfdf5;
+            border: 2px solid #16a34a;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .status h3 {
+            color: #16a34a;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌱 EcoCloset QR Codes</h1>
+        <p class="subtitle">Multiple Access Options for Your Sustainable Fashion Marketplace</p>
+        
+        <div class="status">
+            <h3>🌐 Network Information</h3>
+            <p><strong>Your Local IP:</strong> 172.16.84.67</p>
+            <p><strong>Frontend Status:</strong> ✅ Running on port 3000</p>
+            <p><strong>Backend Status:</strong> ✅ Running on port 5000</p>
+        </div>
+
+        <div class="troubleshooting">
+            <h3>🔧 Troubleshooting QR Code Access</h3>
+            <ul>
+                <li><strong>Localhost QR:</strong> Only works on this computer - good for testing</li>
+                <li><strong>Network QR:</strong> Requires same WiFi connection - best for local sharing</li>
+                <li><strong>Public QR:</strong> Requires ngrok setup - works from anywhere</li>
+                <li><strong>Firewall Issues:</strong> Windows Firewall might block network access</li>
+                <li><strong>Mobile Data:</strong> Turn off mobile data, use WiFi only</li>
+                <li><strong>VPN:</strong> Disable VPN if you're using one</li>
+            </ul>
+        </div>
+
+        <div class="ngrok-setup">
+            <h3>🌍 Public Access with ngrok (Optional)</h3>
+            <p>To make your website accessible from anywhere, you can use ngrok:</p>
+            <ol>
+                <li>Download ngrok from <a href="https://ngrok.com/download" target="_blank">ngrok.com</a></li>
+                <li>Run: <code>ngrok http 3000</code></li>
+                <li>Copy the ngrok URL (looks like https://abc123.ngrok.io)</li>
+                <li>Replace the ngrok URL in the third QR code below</li>
+            </ol>
+        </div>
+        
+        <div class="qr-grid">
+            <div class="qr-box">
+                <h3>Localhost (Computer Only)</h3>
+                <img src="data:image/png;base64,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" alt="Localhost (Computer Only) QR Code" />
+                <div class="url">http://localhost:3000</div>
+                <div class="description">Only works on this computer</div>
+                <a href="data:image/png;base64,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" download="ecocloset-localhost-(computer-only)-qr.png" class="download-btn">
+                    📥 Download
+                </a>
+                <a href="http://localhost:3000" target="_blank" class="download-btn">
+                    🔗 Test Link
+                </a>
+            </div>
+            <div class="qr-box">
+                <h3>Local Network</h3>
+                <img src="data:image/png;base64,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" alt="Local Network QR Code" />
+                <div class="url">http://172.16.84.67:3000</div>
+                <div class="description">Works on devices connected to same WiFi</div>
+                <a href="data:image/png;base64,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" download="ecocloset-local-network-qr.png" class="download-btn">
+                    📥 Download
+                </a>
+                <a href="http://172.16.84.67:3000" target="_blank" class="download-btn">
+                    🔗 Test Link
+                </a>
+            </div>
+            <div class="qr-box">
+                <h3>Public Demo (ngrok)</h3>
+                <img src="data:image/png;base64,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" alt="Public Demo (ngrok) QR Code" />
+                <div class="url">https://your-ngrok-url.ngrok.io</div>
+                <div class="description">Works from anywhere (requires ngrok setup)</div>
+                <a href="data:image/png;base64,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" download="ecocloset-public-demo-(ngrok)-qr.png" class="download-btn">
+                    📥 Download
+                </a>
+                <a href="https://your-ngrok-url.ngrok.io" target="_blank" class="download-btn">
+                    🔗 Test Link
+                </a>
+            </div>
+        </div>
+        
+        <div class="troubleshooting">
+            <h3>📱 Mobile Testing Instructions</h3>
+            <ol>
+                <li><strong>Try Localhost First:</strong> Scan the localhost QR on your computer screen</li>
+                <li><strong>Test Network Access:</strong> Open 172.16.84.67:3000 in your computer browser</li>
+                <li><strong>Check WiFi:</strong> Ensure mobile device is on same WiFi network</li>
+                <li><strong>Disable VPN:</strong> Turn off any VPN on both devices</li>
+                <li><strong>Check Firewall:</strong> Windows might block network access</li>
+                <li><strong>Use ngrok:</strong> For guaranteed access from anywhere</li>
+            </ol>
+        </div>
+    </div>
+</body>
+</html>

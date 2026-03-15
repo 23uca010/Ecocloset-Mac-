@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick QR Update - EcoCloset</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #3b82f6;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .qr-container {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .qr-box {
+            display: inline-block;
+            padding: 20px;
+            border: 3px solid #3b82f6;
+            border-radius: 12px;
+            background: #f8fafc;
+        }
+        .qr-box img {
+            border: 4px solid #3b82f6;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .input-group {
+            margin: 20px 0;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #374151;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .btn {
+            background: #3b82f6;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+        }
+        .btn:hover {
+            background: #2563eb;
+        }
+        .instructions {
+            background: #dbeafe;
+            border: 2px solid #3b82f6;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .instructions h3 {
+            color: #1d4ed8;
+            margin-bottom: 10px;
+        }
+        .instructions ol {
+            color: #1e40af;
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .instructions li {
+            margin-bottom: 5px;
+        }
+        .status {
+            background: #ecfdf5;
+            border: 2px solid #10b981;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌍 EcoCloset QR Update</h1>
+        
+        <div class="status">
+            <h3>✅ Current Status</h3>
+            <p><strong>Frontend:</strong> Running on port 3000</p>
+            <p><strong>Backend:</strong> Running on port 5000</p>
+            <p><strong>Items:</strong> 104 sustainable fashion items</p>
+        </div>
+
+        <div class="instructions">
+            <h3>🔧 Quick Setup Instructions</h3>
+            <ol>
+                <li><strong>Extract ngrok.zip</strong> to a folder called 'ngrok'</li>
+                <li><strong>Open Command Prompt</strong> (Windows Key + R, type 'cmd')</li>
+                <li><strong>Navigate:</strong> <code>cd C:\Users\Stergio Eugin\Desktop\ecocloset-project\ngrok</code></li>
+                <li><strong>Run:</strong> <code>ngrok.exe http 3000</code></li>
+                <li><strong>Copy:</strong> The ngrok URL (https://abc123.ngrok.io)</li>
+                <li><strong>Paste:</strong> Your ngrok URL in the box below</li>
+                <li><strong>Click:</strong> "Generate QR Code"</li>
+            </ol>
+        </div>
+
+        <div class="qr-container">
+            <div class="qr-box">
+                <h3>📱 Public QR Code</h3>
+                <img id="qrImage" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==" alt="QR Code will appear here" />
+                <div class="input-group">
+                    <label for="ngrokUrl">Your ngrok URL:</label>
+                    <input type="text" id="ngrokUrl" placeholder="https://abc123.ngrok.io" />
+                </div>
+                <button class="btn" onclick="generateQRCode()">🔄 Generate QR Code</button>
+                <button class="btn" onclick="downloadQRCode()">📥 Download QR Code</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+    <script>
+        let currentQRDataUrl = null;
+
+        function generateQRCode() {
+            const url = document.getElementById('ngrokUrl').value.trim();
+            
+            if (!url) {
+                alert('❌ Please enter your ngrok URL');
+                return;
+            }
+            
+            if (!url.includes('ngrok.io')) {
+                alert('❌ Please enter a valid ngrok URL (should contain ngrok.io)');
+                return;
+            }
+            
+            // Generate QR code
+            QRCode.toDataURL(url, {
+                width: 300,
+                margin: 2,
+                color: {
+                    dark: '#3b82f6',
+                    light: '#ffffff'
+                }
+            }).then(dataUrl => {
+                currentQRDataUrl = dataUrl;
+                document.getElementById('qrImage').src = dataUrl;
+                alert('✅ QR Code generated successfully!');
+            }).catch(err => {
+                alert('❌ Error generating QR code: ' + err.message);
+            });
+        }
+
+        function downloadQRCode() {
+            if (!currentQRDataUrl) {
+                alert('❌ Please generate a QR code first');
+                return;
+            }
+            
+            const link = document.createElement('a');
+            link.download = 'ecocloset-public-qr.png';
+            link.href = currentQRDataUrl;
+            link.click();
+        }
+    </script>
+</body>
+</html>
