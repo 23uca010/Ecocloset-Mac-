@@ -1,43 +1,32 @@
-const { supabase } = require('../config/supabaseClient');
+const db = require('../database/sqlite');
 
 // Get dashboard statistics
-const getDashboardStats = async (req, res) => {
+const getDashboardStats = (req, res) => {
   try {
-    // Get statistics from Supabase
-    const [
-      usersResult,
-      itemsResult,
-      donationsResult
-    ] = await Promise.all([
-      supabase.from('users').select('count').eq('role', 'user'),
-      supabase.from('items').select('count'),
-      supabase.from('donations').select('count')
-    ]);
-
-    const totalUsers = usersResult.data?.[0]?.count || 0;
-    const totalItems = itemsResult.data?.[0]?.count || 0;
-    const totalDonations = donationsResult.data?.[0]?.count || 0;
+    const totalUsers = db.prepare('SELECT COUNT(*) as count FROM users WHERE role = "user"').get().count;
+    const totalItems = db.prepare('SELECT COUNT(*) as count FROM items').get().count;
+    const activeListings = db.prepare('SELECT COUNT(*) as count FROM items WHERE status = "active"').get().count;
+    const pendingListings = db.prepare('SELECT COUNT(*) as count FROM items WHERE status = "pending"').get().count;
+    const totalSwaps = db.prepare('SELECT COUNT(*) as count FROM swaps').get().count;
+    const reportedItems = db.prepare('SELECT COUNT(*) as count FROM reports WHERE target_type = "item" AND status = "pending"').get().count;
 
     // Get recent activity
-    const [
-      recentUsers,
-      recentItems,
-      pendingDonations
-    ] = await Promise.all([
-      supabase.from('users').select('*').eq('role', 'user').order('created_at', { ascending: false }).limit(5),
-      supabase.from('items').select('*').order('created_at', { ascending: false }).limit(5),
-      supabase.from('donations').select('*').eq('status', 'pending').limit(5)
-    ]);
+    const recentUsers = db.prepare('SELECT id, name, email, role, created_at, status FROM users WHERE role = "user" ORDER BY created_at DESC LIMIT 5').all();
+    const recentItems = db.prepare('SELECT id, title, category, status, created_at FROM items ORDER BY created_at DESC LIMIT 5').all();
 
     res.status(200).json({
       success: true,
-      stats: {
-        totalUsers,
-        totalItems,
-        totalDonations,
-        recentUsers: recentUsers || [],
-        recentItems: recentItems || [],
-        pendingDonations: pendingDonations?.length || 0
+      data: {
+        overview: {
+          totalUsers,
+          totalListings: totalItems,
+          activeListings,
+          pendingListings,
+          totalSwaps,
+          reportedItems
+        },
+        recentUsers,
+        recentItems
       }
     });
 
@@ -45,180 +34,210 @@ const getDashboardStats = async (req, res) => {
     console.error('Dashboard stats error:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error.'
+      message: 'Server error processing statistics.'
     });
   }
 };
 
 // Get all users
-const getAllUsers = async (req, res) => {
+const getUsers = (req, res) => {
   try {
-    const { page = 1, limit = 10, search } = req.query;
-    const offset = (page - 1) * limit;
-
-    let query = supabase
-      .from('users')
-      .select('id, username, email, first_name, last_name, role, created_at')
-      .eq('role', 'user')
-      .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1);
+    const { search } = req.query;
+    let query = 'SELECT id, name, email, role, location, phone, status, created_at FROM users WHERE role = "user"';
+    let params = [];
 
     if (search) {
-      query = query.or(`username.ilike.%${search}%,first_name.ilike.%${search}%,last_name.ilike.%${search}%`);
+      query += ' AND (name LIKE ? OR email LIKE ?)';
+      params.push(`%${search}%`, `%${search}%`);
     }
 
-    const { data: users, error, count } = await query;
-
-    if (error) {
-      console.error('Get users error:', error);
-      return res.status(500).json({
-        success: false,
-        message: 'Error fetching users.'
-      });
-    }
+    query += ' ORDER BY created_at DESC';
+    
+    // Add listings count for each user
+    const users = db.prepare(query).all(...params);
+    const usersWithCounts = users.map(user => {
+      const listingCount = db.prepare('SELECT COUNT(*) as count FROM items WHERE user_id = ?').get(user.id).count;
+      return { ...user, listingsCount: listingCount };
+    });
 
     res.status(200).json({
       success: true,
-      users: users || [],
-      pagination: {
-        page: parseInt(page),
-        limit: parseInt(limit),
-        total: count || 0,
-        pages: Math.ceil((count || 0) / limit)
-      }
+      data: { users: usersWithCounts }
     });
 
   } catch (error) {
-    console.error('Get all users error:', error);
+    console.error('Get users error:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error.'
+      message: 'Server error fetching users.'
     });
   }
 };
 
-// Get all items
-const getAllItems = async (req, res) => {
-  try {
-    const { page = 1, limit = 10, status } = req.query;
-    const offset = (page - 1) * limit;
-
-    let query = supabase
-      .from('items')
-      .select(`
-        *,
-        owner:users(username, first_name, last_name)
-      `)
-      .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1);
-
-    if (status) {
-      query = query.eq('status', status);
-    }
-
-    const { data: items, error, count } = await query;
-
-    if (error) {
-      console.error('Get all items error:', error);
-      return res.status(500).json({
-        success: false,
-        message: 'Error fetching items.'
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      items: items || [],
-      pagination: {
-        page: parseInt(page),
-        limit: parseInt(limit),
-        total: count || 0,
-        pages: Math.ceil((count || 0) / limit)
-      }
-    });
-
-  } catch (error) {
-    console.error('Get all items error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error.'
-    });
-  }
-};
-
-// Update user role
-const updateUserRole = async (req, res) => {
+// Update user status (suspend/ban)
+const updateUserStatus = (req, res) => {
   try {
     const { id } = req.params;
-    const { role } = req.body;
+    const { status } = req.body; // active, suspended, banned
 
-    const { data: userData, error: checkError } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', id)
-      .single();
-
-    if (checkError || !userData) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not found.'
-      });
-    }
-
-    const { data: updatedData, error: updateError } = await supabase
-      .from('users')
-      .update({
-        role,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', id)
-      .select();
-
-    if (updateError) {
-      console.error('Update user role error:', updateError);
-      return res.status(500).json({
-        success: false,
-        message: 'Error updating user role.'
-      });
-    }
+    db.prepare('UPDATE users SET status = ? WHERE id = ?').run(status, id);
 
     res.status(200).json({
       success: true,
-      message: 'User role updated successfully!',
-      user: updatedData[0]
+      message: `User status updated to ${status}`
     });
-
   } catch (error) {
-    console.error('Update user role error:', error);
+    console.error('Update user status error:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error.'
+      message: 'Server error updating user status.'
     });
   }
 };
 
-// Get all users
-const getUsers = getAllUsers;
+// Delete user
+const deleteUser = (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // In a real app, we might want to cascade delete or soft delete
+    db.prepare('DELETE FROM users WHERE id = ?').run(id);
 
-// Get all items
-const getAdminItems = getAllItems;
+    res.status(200).json({
+      success: true,
+      message: 'User deleted successfully'
+    });
+  } catch (error) {
+    console.error('Delete user error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error deleting user.'
+    });
+  }
+};
 
-// Stub functions for missing admin features
-const getUserById = async (req, res) => res.status(200).json({ success: true, message: 'Coming soon' });
-const updateUser = async (req, res) => res.status(200).json({ success: true, message: 'Coming soon' });
-const deleteUser = async (req, res) => res.status(200).json({ success: true, message: 'Coming soon' });
-const getAdminSwaps = async (req, res) => res.status(200).json({ success: true, message: 'Coming soon' });
-const getAdminDonations = async (req, res) => res.status(200).json({ success: true, message: 'Coming soon' });
-const getSystemReports = async (req, res) => res.status(200).json({ success: true, message: 'Coming soon' });
+// Get all items/listings
+const getAdminItems = (req, res) => {
+  try {
+    const items = db.prepare(`
+      SELECT i.*, u.name as owner_name 
+      FROM items i
+      LEFT JOIN users u ON i.user_id = u.id
+      ORDER BY i.created_at DESC
+    `).all();
+
+    res.status(200).json({
+      success: true,
+      data: { items }
+    });
+  } catch (error) {
+    console.error('Get admin items error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error fetching listings.'
+    });
+  }
+};
+
+// Approve/Reject listing
+const updateItemStatus = (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body; // active, rejected, pending
+
+    db.prepare('UPDATE items SET status = ? WHERE id = ?').run(status, id);
+
+    res.status(200).json({
+      success: true,
+      message: `Listing status updated to ${status}`
+    });
+  } catch (error) {
+    console.error('Update item status error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error updating listing.'
+    });
+  }
+};
+
+// Delete listing
+const deleteItem = (req, res) => {
+  try {
+    const { id } = req.params;
+    db.prepare('DELETE FROM items WHERE id = ?').run(id);
+
+    res.status(200).json({
+      success: true,
+      message: 'Listing deleted successfully'
+    });
+  } catch (error) {
+    console.error('Delete item error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error deleting listing.'
+    });
+  }
+};
+
+// Get all swaps
+const getAdminSwaps = (req, res) => {
+  try {
+    const swaps = db.prepare(`
+      SELECT s.*, 
+             ua.name as user_a_name, ub.name as user_b_name,
+             ia.title as item_a_title, ib.title as item_b_title
+      FROM swaps s
+      JOIN users ua ON s.user_a_id = ua.id
+      JOIN users ub ON s.user_b_id = ub.id
+      JOIN items ia ON s.item_a_id = ia.id
+      JOIN items ib ON s.item_b_id = ib.id
+      ORDER BY s.created_at DESC
+    `).all();
+
+    res.status(200).json({
+      success: true,
+      data: { swaps }
+    });
+  } catch (error) {
+    console.error('Get admin swaps error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error fetching swaps.'
+    });
+  }
+};
+
+// Get all reports
+const getSystemReports = (req, res) => {
+  try {
+    const reports = db.prepare(`
+      SELECT r.*, u.name as reporter_name
+      FROM reports r
+      JOIN users u ON r.reporter_id = u.id
+      ORDER BY r.created_at DESC
+    `).all();
+
+    res.status(200).json({
+      success: true,
+      data: { reports }
+    });
+  } catch (error) {
+    console.error('Get system reports error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error fetching reports.'
+    });
+  }
+};
 
 module.exports = {
   getDashboardStats,
   getUsers,
-  getUserById,
-  updateUser,
+  updateUserStatus,
   deleteUser,
   getAdminItems,
+  updateItemStatus,
+  deleteItem,
   getAdminSwaps,
-  getAdminDonations,
   getSystemReports
 };

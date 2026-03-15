@@ -11,7 +11,8 @@ import {
   Gift, 
   Recycle,
   LogOut,
-  Settings
+  Settings,
+  Shield
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
@@ -143,6 +144,18 @@ const ModernNavbar = () => {
                         <span>Dashboard</span>
                       </div>
                     </Link>
+                    {user?.role === 'admin' && (
+                       <Link
+                        to="/admin/dashboard"
+                        className="block px-4 py-2 text-sm text-indigo-600 font-bold hover:bg-indigo-50 transition-colors"
+                        onClick={() => setIsProfileOpen(false)}
+                      >
+                        <div className="flex items-center space-x-2">
+                          <Shield size={16} />
+                          <span>Admin Panel</span>
+                        </div>
+                      </Link>
+                    )}
                     <Link
                       to="/profile"
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"

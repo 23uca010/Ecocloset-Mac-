@@ -35,6 +35,40 @@ import {
   BadgeCheck
 } from 'lucide-react';
 
+const ICON_MAP = {
+  ShoppingBag,
+  ArrowRight,
+  Heart,
+  Plus,
+  TrendingUp,
+  Users,
+  Gift,
+  X,
+  Trophy,
+  Star,
+  Zap,
+  Target,
+  Award,
+  Flame,
+  Leaf,
+  Recycle,
+  Calendar,
+  Clock,
+  BarChart3,
+  Activity,
+  Sparkles,
+  Medal,
+  Crown,
+  Gem,
+  Rocket,
+  Compass,
+  MapPin,
+  HeartHandshake,
+  TreePine,
+  Globe,
+  BadgeCheck
+};
+
 const InnovativeDashboard = () => {
   const { user, api } = useAuth();
   const [stats, setStats] = useState({
@@ -42,28 +76,31 @@ const InnovativeDashboard = () => {
     activeSwaps: 0,
     completedSwaps: 0,
     donations: 0,
+    ecoScore: 0
   });
   const [recentItems, setRecentItems] = useState([]);
   const [recentSwaps, setRecentSwaps] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [showWelcome, setShowWelcome] = useState(false);
   const [welcomeUsername, setWelcomeUsername] = useState('');
   
   // Gamification State
-  const [userLevel, setUserLevel] = useState(3);
-  const [userXP, setUserXP] = useState(250);
-  const [nextLevelXP, setNextLevelXP] = useState(500);
+  const [userLevel, setUserLevel] = useState(1);
+  const [userXP, setUserXP] = useState(0);
+  const [nextLevelXP, setNextLevelXP] = useState(100);
   const [achievements, setAchievements] = useState([]);
-  const [dailyStreak, setDailyStreak] = useState(7);
-  const [ecoScore, setEcoScore] = useState(850);
+  const [dailyStreak, setDailyStreak] = useState(0);
+  const [ecoScore, setEcoScore] = useState(0);
   const [badges, setBadges] = useState([]);
   const [challenges, setChallenges] = useState([]);
   const [leaderboard, setLeaderboard] = useState([]);
   const [activeChallenge, setActiveChallenge] = useState(null);
 
   useEffect(() => {
-    fetchDashboardData();
-    initializeGamification();
+    if (user?.id) {
+      fetchDashboardData();
+    }
     
     // Check if user just logged in
     const loginSuccess = localStorage.getItem('loginSuccess');
@@ -82,65 +119,65 @@ const InnovativeDashboard = () => {
         setShowWelcome(false);
       }, 5000);
     }
-  }, []);
-
-  // Initialize gamification data
-  const initializeGamification = () => {
-    setAchievements([
-      { id: 1, name: 'First Swap', icon: Trophy, unlocked: true, description: 'Complete your first swap' },
-      { id: 2, name: 'Eco Warrior', icon: Leaf, unlocked: true, description: 'Donate 10 items' },
-      { id: 3, name: 'Social Butterfly', icon: Users, unlocked: false, description: 'Connect with 20 users' },
-      { id: 4, name: 'Fashion Icon', icon: Star, unlocked: false, description: 'List 50 items' },
-    ]);
-    
-    setBadges([
-      { id: 1, name: 'Green Hero', icon: BadgeCheck, color: 'bg-green-500', unlocked: true },
-      { id: 2, name: 'Swap Master', icon: Medal, color: 'bg-blue-500', unlocked: true },
-      { id: 3, name: 'Donation Champion', icon: Heart, color: 'bg-red-500', unlocked: false },
-      { id: 4, name: 'Trendsetter', icon: Sparkles, color: 'bg-purple-500', unlocked: false },
-    ]);
-    
-    setChallenges([
-      { id: 1, title: 'Swap 3 Items', progress: 2, total: 3, reward: 50, icon: Recycle },
-      { id: 2, title: 'Donate 5 Items', progress: 3, total: 5, reward: 100, icon: Gift },
-      { id: 3, title: 'Complete Profile', progress: 80, total: 100, reward: 25, icon: Users },
-    ]);
-    
-    setLeaderboard([
-      { rank: 1, name: 'EcoWarrior', score: 2450, avatar: '🌟' },
-      { rank: 2, name: 'FashionHero', score: 2100, avatar: '👑' },
-      { rank: 3, name: user?.firstName || 'You', score: ecoScore, avatar: '🌱', isUser: true },
-      { rank: 4, name: 'GreenQueen', score: 1800, avatar: '👸' },
-      { rank: 5, name: 'SwapKing', score: 1650, avatar: '🤴' },
-    ]);
-    
-    setActiveChallenge(challenges[0]);
-  };
+  }, [user]);
 
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
+      setError(null);
       
-      // Mock data for now
-      setStats({
-        totalItems: 12,
-        activeSwaps: 3,
-        completedSwaps: 8,
-        donations: 5,
-      });
+      console.log('Fetching dashboard data for user:', user.id);
+      console.log('API baseURL:', api.defaults.baseURL);
+      const response = await api.get(`dashboard/user/${user.id}`);
+      console.log('Dashboard response:', response.data);
+      const { success, data, message } = response.data;
+
+      if (!success) {
+        throw new Error(message || 'Failed to fetch dashboard data');
+      }
+
+      setStats(data.stats);
+      setRecentItems(data.recentItems);
+      setRecentSwaps(data.recentSwaps);
       
-      setRecentItems([
-        { _id: 1, title: 'Vintage Denim Jacket', price: 1200, description: 'Classic denim jacket' },
-        { _id: 2, title: 'Summer Dress', price: 800, description: 'Light summer dress' },
+      // Map icons for achievements
+      const mappedAchievements = data.achievements.map(ach => ({
+        ...ach,
+        icon: ICON_MAP[ach.icon] || Trophy,
+        unlocked: true
+      }));
+      setAchievements(mappedAchievements);
+
+      // Map icons for badges
+      const mappedBadges = data.badges.map(badge => ({
+        ...badge,
+        icon: ICON_MAP[badge.icon] || Medal,
+        unlocked: true
+      }));
+      setBadges(mappedBadges);
+
+      // User Gamification
+      setUserLevel(data.user.level);
+      setUserXP(data.user.xp);
+      setNextLevelXP(data.user.next_level_xp);
+      setDailyStreak(data.user.streak);
+      setEcoScore(data.user.eco_score);
+
+      // Static placeholder for challenges and leaderboard for now
+      setChallenges([
+        { id: 1, title: 'Swap 3 Items', progress: data.stats.totalItems % 3, total: 3, reward: 50, icon: Recycle },
+        { id: 2, title: 'Donate 5 Items', progress: data.stats.donations % 5, total: 5, reward: 100, icon: Gift },
       ]);
       
-      setRecentSwaps([
-        { _id: 1, item: { title: 'Vintage Denim Jacket' }, status: 'pending' },
-        { _id: 2, item: { title: 'Summer Dress' }, status: 'completed' },
+      setLeaderboard([
+        { rank: 1, name: 'EcoWarrior', score: 2450, avatar: '🌟' },
+        { rank: 2, name: 'FashionHero', score: 2100, avatar: '👑' },
+        { rank: 3, name: data.user.firstName || 'You', score: data.user.eco_score, avatar: '🌱', isUser: true },
       ]);
       
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
+      setError(error.message);
     } finally {
       setLoading(false);
     }
@@ -148,8 +185,27 @@ const InnovativeDashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+      <div className="min-h-screen flex flex-col items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mb-4"></div>
+        <p className="text-gray-600 font-medium">Loading your sustainable universe...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-4">
+        <div className="bg-red-50 border border-red-200 rounded-xl p-8 max-w-md text-center">
+          <X className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h2 className="text-xl font-bold text-red-900 mb-2">Oops! Something went wrong</h2>
+          <p className="text-red-700 mb-6">{error}</p>
+          <button 
+            onClick={fetchDashboardData}
+            className="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
       </div>
     );
   }
@@ -452,41 +508,46 @@ const InnovativeDashboard = () => {
               <Activity className="h-8 w-8 mr-2 text-blue-500" />
               <h2 className="text-xl font-bold text-gray-900">Recent Activity</h2>
             </div>
-            <Link to="/dashboard/activity" className="text-blue-600 hover:text-blue-700 text-sm font-medium">
-              View All
+            <Link to="/profile" className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+              View Profile
             </Link>
           </div>
           <div className="space-y-4">
-            <div className="flex items-center p-3 bg-green-50 rounded-lg">
-              <div className="bg-green-100 rounded-full p-2 mr-3">
-                <Trophy className="h-4 w-4 text-green-600" />
+            {recentItems.length === 0 && recentSwaps.length === 0 && (
+              <p className="text-center text-gray-500 py-4 italic">No recent activity found. Start your journey by listing an item!</p>
+            )}
+            
+            {recentItems.map((item) => (
+              <div key={`item-${item.id}`} className="flex items-center p-3 bg-blue-50 rounded-lg">
+                <div className="bg-blue-100 rounded-full p-2 mr-3">
+                  <ShoppingBag className="h-4 w-4 text-blue-600" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-900">New Item Listed</p>
+                  <p className="text-xs text-gray-600">{item.title} - ₹{item.price}</p>
+                </div>
+                <span className="text-xs text-gray-500">
+                  {new Date(item.created_at).toLocaleDateString()}
+                </span>
               </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-gray-900">Achievement Unlocked!</p>
-                <p className="text-xs text-gray-600">You completed your first swap</p>
+            ))}
+
+            {recentSwaps.map((swap) => (
+              <div key={`swap-${swap.id}`} className="flex items-center p-3 bg-green-50 rounded-lg">
+                <div className="bg-green-100 rounded-full p-2 mr-3">
+                  <Recycle className="h-4 w-4 text-green-600" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-900">Swap {swap.status.charAt(0).toUpperCase() + swap.status.slice(1)}</p>
+                  <p className="text-xs text-gray-600">
+                    {swap.item_a_title} ⇋ {swap.item_b_title}
+                  </p>
+                </div>
+                <span className="text-xs text-gray-500">
+                  {new Date(swap.created_at).toLocaleDateString()}
+                </span>
               </div>
-              <span className="text-xs text-gray-500">2h ago</span>
-            </div>
-            <div className="flex items-center p-3 bg-blue-50 rounded-lg">
-              <div className="bg-blue-100 rounded-full p-2 mr-3">
-                <ShoppingBag className="h-4 w-4 text-blue-600" />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-gray-900">New Item Listed</p>
-                <p className="text-xs text-gray-600">Vintage Denim Jacket</p>
-              </div>
-              <span className="text-xs text-gray-500">5h ago</span>
-            </div>
-            <div className="flex items-center p-3 bg-purple-50 rounded-lg">
-              <div className="bg-purple-100 rounded-full p-2 mr-3">
-                <Gift className="h-4 w-4 text-purple-600" />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-gray-900">Donation Made</p>
-                <p className="text-xs text-gray-600">3 items to Green Earth Foundation</p>
-              </div>
-              <span className="text-xs text-gray-500">1d ago</span>
-            </div>
+            ))}
           </div>
         </div>
 

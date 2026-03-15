@@ -1,38 +1,28 @@
 const express = require('express');
 const router = express.Router();
-const { authenticate, authorize } = require('../middleware/auth');
-const {
-  getDashboardStats,
-  getUsers,
-  getUserById,
-  updateUser,
+const { 
+  getDashboardStats, 
+  getUsers, 
+  updateUserStatus, 
   deleteUser,
   getAdminItems,
+  updateItemStatus,
+  deleteItem,
   getAdminSwaps,
-  getAdminDonations,
   getSystemReports
 } = require('../controllers/adminController');
 
-// All admin routes require admin role
-router.use(authenticate, authorize('admin'));
+// All these routes should be protected by isAdmin middleware in server.js
+// but here we just define the sub-routes
 
-// Dashboard and statistics
 router.get('/dashboard/stats', getDashboardStats);
-router.get('/reports', getSystemReports);
-
-// User management
 router.get('/users', getUsers);
-router.get('/users/:id', getUserById);
-router.put('/users/:id', updateUser);
+router.put('/users/:id/status', updateUserStatus);
 router.delete('/users/:id', deleteUser);
-
-// Item management
 router.get('/items', getAdminItems);
-
-// Swap management
+router.put('/items/:id/status', updateItemStatus);
+router.delete('/items/:id', deleteItem);
 router.get('/swaps', getAdminSwaps);
-
-// Donation management
-router.get('/donations', getAdminDonations);
+router.get('/reports', getSystemReports);
 
 module.exports = router;
