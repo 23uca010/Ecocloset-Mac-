@@ -21,7 +21,6 @@ import Donations from './pages/Donations';
 import SellSwap from './pages/SellSwap';
 import AdminDashboard from './pages/AdminDashboard';
 import NGODashboard from './pages/NGODashboard';
-import TestConnection from './pages/TestConnection';
 import ProtectedRoute from './components/ProtectedRoute';
 import UserProfile from './components/UserProfile';
 
@@ -72,7 +71,6 @@ function App() {
               } />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
-              <Route path="/test-connection" element={<TestConnection />} />
               <Route path="/items" element={
                 <ProtectedRoute>
                   <StylishItems />
