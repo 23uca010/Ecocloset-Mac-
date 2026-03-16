@@ -8,7 +8,53 @@ const getDashboardStats = (req, res) => {
     const activeListings = db.prepare("SELECT COUNT(*) as count FROM items WHERE status = 'active'").get().count;
     const pendingListings = db.prepare("SELECT COUNT(*) as count FROM items WHERE status = 'pending'").get().count;
     const totalSwaps = db.prepare('SELECT COUNT(*) as count FROM swaps').get().count;
-    const reportedItems = db.prepare("SELECT COUNT(*) as count FROM reports WHERE target_type = 'item' AND status = 'pending'").get().count;
+    
+    // Check if the reports table exists before querying
+    let reportedItems = 0;
+    try {
+       reportedItems = db.prepare("SELECT COUNT(*) as count FROM reports WHERE target_type = 'item' AND status = 'pending'").get().count;
+    } catch(e) { /* Ignore if table doesn't exist yet */ }
+
+    // Calculate approval rate
+    const totalProcessed = activeListings + pendingListings;
+    const approvalRate = totalProcessed > 0 ? ((activeListings / totalProcessed) * 100).toFixed(1) : 0;
+
+    // Platform Growth Data (Mocking past 12 months based on current counts for simplicity, 
+    // but in a real app this would group by created_at)
+    // Here we will do a basic group by month for the current year
+    const currentYear = new Date().getFullYear();
+    const monthlyListings = new Array(12).fill(0);
+    const monthlySwaps = new Array(12).fill(0);
+
+    const itemsByMonth = db.prepare(`
+      SELECT strftime('%m', created_at) as month, COUNT(*) as count 
+      FROM items 
+      WHERE strftime('%Y', created_at) = ? 
+      GROUP BY month
+    `).all(currentYear.toString());
+
+    itemsByMonth.forEach(row => {
+      monthlyListings[parseInt(row.month, 10) - 1] = row.count;
+    });
+
+    const swapsByMonth = db.prepare(`
+      SELECT strftime('%m', created_at) as month, COUNT(*) as count 
+      FROM swaps 
+      WHERE strftime('%Y', created_at) = ? 
+      GROUP BY month
+    `).all(currentYear.toString());
+
+    swapsByMonth.forEach(row => {
+      monthlySwaps[parseInt(row.month, 10) - 1] = row.count;
+    });
+
+    // To make the chart look interesting even with low data, calculate normalized height percentages (0-100)
+    // We'll pass raw counts and let frontend decide height, or we can pass a structured array
+    const chartData = monthlyListings.map((count, i) => ({
+      month: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][i],
+      listings: count,
+      swaps: monthlySwaps[i]
+    }));
 
     // Get recent activity
     const recentUsers = db.prepare("SELECT id, name, email, role, created_at, status FROM users WHERE role = 'user' ORDER BY created_at DESC LIMIT 5").all();
@@ -23,7 +69,9 @@ const getDashboardStats = (req, res) => {
           activeListings,
           pendingListings,
           totalSwaps,
-          reportedItems
+          reportedItems,
+          approvalRate,
+          chartData
         },
         recentUsers,
         recentItems

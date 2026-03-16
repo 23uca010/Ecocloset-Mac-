@@ -35,6 +35,12 @@ const getConversations = (req, res) => {
     const userId = req.userId;
 
     // A fairly complex query to get distinct conversations and the latest message
+    db.prepare(`
+      UPDATE messages 
+      SET messageStatus = 'delivered' 
+      WHERE receiver_id = ? AND messageStatus = 'sent'
+    `).run(userId);
+
     const conversations = db.prepare(`
       SELECT 
           CASE 
@@ -46,6 +52,7 @@ const getConversations = (req, res) => {
           m.content as last_message,
           m.created_at as last_message_date,
           m.is_read,
+          m.messageStatus,
           m.sender_id
       FROM messages m
       JOIN users u ON u.id = CASE WHEN m.sender_id = ? THEN m.receiver_id ELSE m.sender_id END
@@ -99,8 +106,8 @@ const markAsRead = (req, res) => {
 
     db.prepare(`
       UPDATE messages 
-      SET is_read = 1 
-      WHERE receiver_id = ? AND sender_id = ? AND is_read = 0
+      SET is_read = 1, messageStatus = 'seen'
+      WHERE receiver_id = ? AND sender_id = ? AND (is_read = 0 OR messageStatus != 'seen')
     `).run(userId, senderId);
 
     res.status(200).json({ success: true, message: 'Messages marked as read' });

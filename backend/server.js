@@ -143,6 +143,23 @@ columnsToAdd.forEach(col => {
         }
     }
 });
+
+// Migration: Ensure messages table has messageStatus column
+const messageColumnsToAdd = [
+    { name: 'messageStatus', type: 'TEXT DEFAULT "sent"' }
+];
+
+messageColumnsToAdd.forEach(col => {
+    try {
+        db.exec(`ALTER TABLE messages ADD COLUMN ${col.name} ${col.type}`);
+        console.log(`Added column: ${col.name} to messages`);
+    } catch (e) {
+        if (!e.message.includes('duplicate column name')) {
+            console.error(`Error adding column ${col.name} to messages:`, e.message);
+        }
+    }
+});
+
 console.log("Migrations complete.");
 
 // Initialize Default Admin Account

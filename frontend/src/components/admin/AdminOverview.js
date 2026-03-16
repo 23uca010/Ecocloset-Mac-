@@ -27,25 +27,47 @@ const AdminOverview = ({ stats, recentUsers, recentItems }) => {
   );
 
   // Simple SVG Chart component
-  const ActivityChart = () => (
-    <div className="h-64 w-full flex items-end justify-between gap-2 pt-4">
-      {[45, 60, 40, 80, 55, 90, 70, 85, 50, 65, 75, 95].map((height, i) => (
-        <div key={i} className="flex-1 flex flex-col items-center group">
-          <div 
-            className="w-full bg-indigo-100 rounded-t-lg transition-all group-hover:bg-indigo-600 relative"
-            style={{ height: `${height}%` }}
-          >
-            <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity">
-              {height} units
+  const ActivityChart = () => {
+    const chartData = stats?.chartData || [];
+    const maxVal = Math.max(...chartData.map(d => Math.max(d.listings, d.swaps, 1))); // at least 1 to avoid div by 0
+
+    return (
+      <div className="h-64 w-full flex items-end justify-between gap-2 pt-4">
+        {chartData.map((data, i) => {
+          const listingsHeight = (data.listings / maxVal) * 100;
+          const swapsHeight = (data.swaps / maxVal) * 100;
+          
+          return (
+            <div key={i} className="flex-1 flex flex-col items-center group h-full justify-end">
+              <div className="w-full flex items-end gap-[1px] h-full"> 
+                {/* Swaps Bar */}
+                <div 
+                  className="flex-1 bg-indigo-600 rounded-t-sm transition-all relative group-hover:bg-indigo-700"
+                  style={{ height: `${swapsHeight}%`, minHeight: data.swaps > 0 ? '4px' : '0' }}
+                >
+                  {data.swaps > 0 && <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] py-0.5 px-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity z-10 w-max pointer-events-none">
+                    {data.swaps} swaps
+                  </div>}
+                </div>
+                {/* Listings Bar */}
+                <div 
+                  className="flex-1 bg-indigo-200 rounded-t-sm transition-all relative group-hover:bg-indigo-300"
+                  style={{ height: `${listingsHeight}%`, minHeight: data.listings > 0 ? '4px' : '0' }}
+                >
+                   {data.listings > 0 && <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] py-0.5 px-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity z-10 w-max pointer-events-none">
+                    {data.listings} listings
+                  </div>}
+                </div>
+              </div>
+              <span className="text-[10px] text-gray-400 mt-2 font-bold uppercase tracking-tighter">
+                {data.month}
+              </span>
             </div>
-          </div>
-          <span className="text-[10px] text-gray-400 mt-2 font-bold uppercase tracking-tighter">
-            {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][i]}
-          </span>
-        </div>
-      ))}
-    </div>
-  );
+          );
+        })}
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -113,10 +135,10 @@ const AdminOverview = ({ stats, recentUsers, recentItems }) => {
               <TrendingUp size={20} />
               Approval Rate
             </h4>
-            <div className="text-4xl font-black mb-2">94.2%</div>
+            <div className="text-4xl font-black mb-2">{stats?.approvalRate || 0}%</div>
             <p className="text-indigo-100 text-sm">Target threshold: 90%</p>
             <div className="mt-6 h-1 w-full bg-white/20 rounded-full overflow-hidden">
-              <div className="h-full bg-white rounded-full" style={{ width: '94.2%' }}></div>
+              <div className="h-full bg-white rounded-full" style={{ width: `${stats?.approvalRate || 0}%` }}></div>
             </div>
           </div>
 
@@ -136,7 +158,7 @@ const AdminOverview = ({ stats, recentUsers, recentItems }) => {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Unresolved Swaps</span>
-                <span className="font-bold text-amber-600">12</span>
+                <span className="font-bold text-amber-600">{stats?.totalSwaps || 0}</span>
               </div>
             </div>
           </div>

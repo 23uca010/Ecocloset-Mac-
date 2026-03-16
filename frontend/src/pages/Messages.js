@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Send, User as UserIcon, MessageSquare, Clock } from 'lucide-react';
+import { Send, User as UserIcon, MessageSquare, Check, CheckCheck } from 'lucide-react';
 
 const Messages = () => {
   const { user, api } = useAuth();
@@ -49,7 +49,7 @@ const Messages = () => {
   const fetchConversations = async () => {
     try {
       const response = await api.get('/messages/conversations');
-      setConversations(response.data.conversations || []);
+      setConversations(response.data?.data?.conversations || response.data?.conversations || []);
       setLoading(false);
     } catch (err) {
       console.error('Failed to fetch conversations:', err);
@@ -60,7 +60,7 @@ const Messages = () => {
   const fetchMessages = async (userId) => {
     try {
       const response = await api.get(`/messages/history/${userId}`);
-      setMessages(response.data.messages || []);
+      setMessages(response.data?.data?.messages || response.data?.messages || []);
     } catch (err) {
       console.error('Failed to fetch messages:', err);
     }
@@ -190,8 +190,14 @@ const Messages = () => {
                         }`}>
                           <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</p>
                           <div className={`text-[10px] mt-1 text-right flex items-center justify-end ${isMe ? 'text-indigo-200' : 'text-gray-400'}`}>
-                            <Clock className="w-3 h-3 mr-1 inline" />
                             {new Date(msg.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                            {isMe && (
+                              <div className="ml-1.5 flex items-center">
+                                {(!msg.messageStatus || msg.messageStatus === 'sent') && <Check className="w-3.5 h-3.5 text-gray-300" />}
+                                {msg.messageStatus === 'delivered' && <CheckCheck className="w-3.5 h-3.5 text-gray-300" />}
+                                {msg.messageStatus === 'seen' && <CheckCheck className="w-3.5 h-3.5 text-blue-400" />}
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
