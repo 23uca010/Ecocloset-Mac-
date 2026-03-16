@@ -4,7 +4,8 @@ const {
   getItems, 
   createItem, 
   getItem, 
-  deleteItem 
+  deleteItem,
+  getUserItems
 } = require('../controllers/itemController');
 const multer = require('multer');
 const path = require('path');
@@ -22,6 +23,7 @@ const upload = multer({ storage: storage })
 
 router.get('/', getItems);
 router.post('/create', upload.single("image"), createItem);
+router.get('/user/:userId', getUserItems);
 router.get('/:id', getItem);
 router.delete('/:id', deleteItem);
 

@@ -1,71 +1,54 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
-  Search, 
-  ShoppingBag, 
-  Heart, 
-  Users, 
-  TrendingUp, 
-  Star, 
-  Gift, 
-  Recycle, 
-  Leaf, 
-  Globe, 
-  ArrowRight,
-  Sparkles,
-  Award,
-  TreePine,
-  Package
+  Search, ShoppingBag, Heart, Users, Recycle, Leaf, ArrowRight,
+  Gift, Star, ShoppingCart, Package, TrendingUp, Shirt
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { useCart } from '../context/CartContext';
+
+const CATEGORIES = [
+  { name: 'Tops', emoji: '👕', color: 'from-rose-400 to-pink-500', bg: 'bg-rose-50', text: 'text-rose-700' },
+  { name: 'Bottoms', emoji: '👖', color: 'from-blue-400 to-indigo-500', bg: 'bg-blue-50', text: 'text-blue-700' },
+  { name: 'Dresses', emoji: '👗', color: 'from-purple-400 to-violet-500', bg: 'bg-purple-50', text: 'text-purple-700' },
+  { name: 'Outerwear', emoji: '🧥', color: 'from-amber-400 to-orange-500', bg: 'bg-amber-50', text: 'text-amber-700' },
+  { name: 'Shoes', emoji: '👟', color: 'from-teal-400 to-cyan-500', bg: 'bg-teal-50', text: 'text-teal-700' },
+  { name: 'Accessories', emoji: '👜', color: 'from-green-400 to-emerald-500', bg: 'bg-green-50', text: 'text-green-700' },
+];
 
 const ModernHome = () => {
   const navigate = useNavigate();
-  const [showThankYou, setShowThankYou] = useState(false);
   const { isAuthenticated, user } = useAuth();
-  const { items, totalItems } = useCart();
   const [searchQuery, setSearchQuery] = useState('');
   const [featuredItems, setFeaturedItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState({
-    totalItems: 0,
-    totalUsers: 0,
-    totalNGOs: 0,
-    totalDonations: 0,
-    itemsSwapped: 0,
-    co2Saved: 0
+    totalItems: 0, totalUsers: 0, itemsSwapped: 0, co2Saved: 0
   });
 
-  const handleDonateClick = () => {
-    setShowThankYou(true);
-    setTimeout(() => {
-      setShowThankYou(false);
-    }, 3000);
-  };
-
   useEffect(() => {
-    // Load featured items
     const loadFeaturedItems = async () => {
       try {
         const response = await fetch('http://localhost:5000/api/items');
         const data = await response.json();
         if (response.ok && data.success) {
-          setFeaturedItems(data.data.slice(0, 8)); // Limit to top 8
+          const mapped = data.data.slice(0, 8).map(item => ({
+            ...item,
+            image: item.image
+              ? (item.image.startsWith('http') ? item.image : `http://localhost:5000/${item.image}`)
+              : 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=600&q=80'
+          }));
+          setFeaturedItems(mapped);
         }
       } catch (error) {
         console.error('Error loading featured items:', error);
       }
     };
 
-    // Load stats
     const loadStats = async () => {
       try {
         const response = await fetch('http://localhost:5000/api/stats');
         const data = await response.json();
-        if (response.ok && data.success) {
-          setStats(data.data);
-        }
+        if (response.ok && data.success) setStats(data.data);
       } catch (error) {
         console.error('Error loading stats:', error);
       } finally {
@@ -80,365 +63,264 @@ const ModernHome = () => {
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      navigate(`/items?search=${encodeURIComponent(searchQuery.trim())}`);
+      navigate(`/browse?search=${encodeURIComponent(searchQuery.trim())}`);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
-      {/* Thank You Message */}
-      {showThankYou && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-8 max-w-md mx-4 transform scale-100 transition-transform">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Gift className="h-8 w-8 text-green-600" />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Thank you for your Interest!</h2>
-              <p className="text-gray-600 mb-4">
-                We appreciate your willingness to support sustainable fashion. Our team will contact you soon with more information about donation opportunities.
-              </p>
-              <button
-                onClick={() => setShowThankYou(false)}
-                className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+    <div className="min-h-screen bg-white">
       
-      {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      {/* ── Hero Section ── */}
+      <section className="relative bg-gradient-to-br from-[#0f1c14] via-[#1a3020] to-[#112218] text-white overflow-hidden">
+        {/* Background decoration */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#108c4b]/20 rounded-full blur-[120px]" />
+          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-green-400/10 rounded-full blur-[100px]" />
+        </div>
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
-              <div className="inline-flex items-center space-x-2 bg-green-100 rounded-full px-4 py-2 mb-6">
-                <Leaf className="h-5 w-5 text-green-600" />
-                <span className="text-green-800 font-medium">Sustainable Fashion Marketplace</span>
+              <div className="inline-flex items-center gap-2 bg-[#108c4b]/30 border border-[#108c4b]/40 rounded-full px-4 py-2 mb-8">
+                <Leaf className="h-4 w-4 text-green-400" />
+                <span className="text-green-300 text-sm font-medium">Sustainable Fashion Marketplace</span>
               </div>
-              
-              <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
-                Swap, Sell & 
-                <span className="bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
-                  {" "}Donate
+
+              <h1 className="text-5xl lg:text-6xl font-extrabold leading-tight mb-6 tracking-tight">
+                Swap, Sell &{' '}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#34d399] to-[#22c55e]">
+                  Donate
                 </span>
                 <br />
                 Fashion Sustainably
               </h1>
-              
-              <p className="text-xl text-gray-600 mb-8">
+
+              <p className="text-lg text-gray-300 mb-8 max-w-lg leading-relaxed">
                 Join thousands of eco-conscious fashion lovers. Give your clothes a second life, 
                 discover unique pieces, and make a positive impact on the planet.
               </p>
-              
-              <div className="flex flex-col sm:flex-row gap-4 mb-8">
-                <Link
-                  to="/items"
-                  className="px-8 py-4 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-full font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center justify-center"
-                >
-                  <ShoppingBag className="h-5 w-5 mr-2" />
+
+              <div className="flex flex-col sm:flex-row gap-3 mb-8">
+                <Link to="/browse"
+                  className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-[#108c4b] hover:bg-[#0d7a40] text-white rounded-xl font-semibold transition-all hover:shadow-lg hover:shadow-green-900/30 hover:-translate-y-0.5">
+                  <ShoppingBag className="h-5 w-5" />
                   Browse Items
                 </Link>
-                <Link
-                  to="/sell-swap"
-                  className="px-8 py-4 border-2 border-green-600 text-green-600 rounded-full font-semibold hover:bg-green-50 transition-colors flex items-center justify-center"
-                >
-                  <Recycle className="h-5 w-5 mr-2" />
-                  List Items
+                <Link to="/add-listing"
+                  className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-xl font-semibold transition-all hover:-translate-y-0.5">
+                  <Recycle className="h-5 w-5" />
+                  List Your Item
                 </Link>
               </div>
 
-              {/* Search Bar */}
+              {/* Search */}
               <form onSubmit={handleSearch} className="relative max-w-md">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Search for clothes, brands, or styles..."
+                  placeholder="Search clothes, brands, styles..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-12 pr-4 py-4 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent shadow-sm"
+                  className="w-full pl-12 pr-14 py-3.5 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:bg-white/15 transition-all"
                 />
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <button
-                  type="submit"
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors"
-                >
-                  <Search className="h-4 w-4" />
+                <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-[#108c4b] rounded-lg hover:bg-[#0d7a40] transition-colors">
+                  <Search className="h-4 w-4 text-white" />
                 </button>
               </form>
             </div>
-            
-            <div className="relative">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-4">
-                  <div className="bg-white rounded-2xl shadow-xl p-6 transform hover:scale-105 transition-transform duration-200">
-                    <div className="w-full h-32 bg-gradient-to-br from-pink-100 to-purple-100 rounded-lg mb-4"></div>
-                    <h3 className="font-semibold text-gray-900">Summer Collection</h3>
-                    <p className="text-sm text-gray-600">Light & breezy pieces</p>
-                  </div>
-                  <div className="bg-white rounded-2xl shadow-xl p-6 transform hover:scale-105 transition-transform duration-200">
-                    <div className="w-full h-32 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-lg mb-4"></div>
-                    <h3 className="font-semibold text-gray-900">Denim Classics</h3>
-                    <p className="text-sm text-gray-600">Timeless styles</p>
-                  </div>
-                </div>
-                <div className="space-y-4 mt-8">
-                  <div className="bg-white rounded-2xl shadow-xl p-6 transform hover:scale-105 transition-transform duration-200">
-                    <div className="w-full h-32 bg-gradient-to-br from-green-100 to-emerald-100 rounded-lg mb-4"></div>
-                    <h3 className="font-semibold text-gray-900">Eco Essentials</h3>
-                    <p className="text-sm text-gray-600">Sustainable basics</p>
-                  </div>
-                  <div className="bg-white rounded-2xl shadow-xl p-6 transform hover:scale-105 transition-transform duration-200">
-                    <div className="w-full h-32 bg-gradient-to-br from-yellow-100 to-orange-100 rounded-lg mb-4"></div>
-                    <h3 className="font-semibold text-gray-900">Vintage Finds</h3>
-                    <p className="text-sm text-gray-600">Retro treasures</p>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Floating Elements */}
-              <div className="absolute -top-4 -right-4 w-24 h-24 bg-green-200 rounded-full opacity-20 animate-pulse"></div>
-              <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-blue-200 rounded-full opacity-20 animate-pulse"></div>
-            </div>
-          </div>
-        </div>
-      </section>
 
-      {/* Stats Section */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="text-center">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4 animate-pulse">
-                    <div className="w-8 h-8 bg-gray-300 rounded"></div>
+            {/* Feature Cards Grid */}
+            <div className="hidden lg:grid grid-cols-2 gap-4">
+              {[
+                { label: 'Swap & Exchange', desc: 'Trade clothes you love', icon: Recycle, color: 'bg-blue-500/20 text-blue-300', grad: 'from-blue-900/40 to-blue-800/20' },
+                { label: 'Sell Pre-Loved', desc: 'Earn from old wardrobe', icon: ShoppingCart, color: 'bg-green-500/20 text-green-300', grad: 'from-green-900/40 to-green-800/20' },
+                { label: 'Donate to NGOs', desc: 'Support good causes', icon: Heart, color: 'bg-rose-500/20 text-rose-300', grad: 'from-rose-900/40 to-rose-800/20' },
+                { label: 'Go Eco-Friendly', desc: 'Reduce fashion waste', icon: Leaf, color: 'bg-emerald-500/20 text-emerald-300', grad: 'from-emerald-900/40 to-emerald-800/20' },
+              ].map((card) => (
+                <div key={card.label} className={`bg-gradient-to-br ${card.grad} border border-white/10 rounded-2xl p-6 hover:border-white/20 transition-all hover:-translate-y-1`}>
+                  <div className={`inline-flex p-2.5 rounded-xl ${card.color} mb-4`}>
+                    <card.icon className="h-5 w-5" />
                   </div>
-                  <div className="h-8 bg-gray-200 rounded mb-2 animate-pulse"></div>
-                  <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                  <h3 className="text-white font-semibold mb-1">{card.label}</h3>
+                  <p className="text-gray-400 text-sm">{card.desc}</p>
                 </div>
               ))}
             </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              <div className="text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
-                  <ShoppingBag className="h-8 w-8 text-green-600" />
-                </div>
-                <h3 className="text-3xl font-bold text-gray-900 mb-2">{(stats.totalItems ?? 0).toLocaleString()}</h3>
-                <p className="text-gray-600">Items Available</p>
-              </div>
-              <div className="text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
-                  <Users className="h-8 w-8 text-blue-600" />
-                </div>
-                <h3 className="text-3xl font-bold text-gray-900 mb-2">{(stats.totalUsers ?? 0).toLocaleString()}</h3>
-                <p className="text-gray-600">Active Users</p>
-              </div>
-              <div className="text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-purple-100 rounded-full mb-4">
-                  <Recycle className="h-8 w-8 text-purple-600" />
-                </div>
-                <h3 className="text-3xl font-bold text-gray-900 mb-2">{(stats.itemsSwapped ?? 0).toLocaleString()}</h3>
-                <p className="text-gray-600">Items Swapped</p>
-              </div>
-              <div className="text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-100 rounded-full mb-4">
-                  <TreePine className="h-8 w-8 text-orange-600" />
-                </div>
-                <h3 className="text-3xl font-bold text-gray-900 mb-2">{(stats.co2Saved ?? 0).toLocaleString()}</h3>
-                <p className="text-gray-600">kg CO₂ Saved</p>
-              </div>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="py-20 bg-gradient-to-r from-green-50 to-blue-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Why Choose EcoCloset?
-            </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              We're revolutionizing fashion with sustainability, community, and style at the heart of everything we do.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div className="bg-white rounded-2xl shadow-lg p-8 hover:shadow-xl transition-shadow duration-200">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-green-100 rounded-full mb-6">
-                <Recycle className="h-6 w-6 text-green-600" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">Swap & Exchange</h3>
-              <p className="text-gray-600 mb-4">
-                Trade clothes with other fashion lovers. Find unique pieces while giving your items a new home.
-              </p>
-              <Link to="/swaps" className="text-green-600 hover:text-green-700 font-medium flex items-center">
-                Start Swapping <ArrowRight className="h-4 w-4 ml-1" />
-              </Link>
-            </div>
-
-            <div className="bg-white rounded-2xl shadow-lg p-8 hover:shadow-xl transition-shadow duration-200">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full mb-6">
-                <ShoppingBag className="h-6 w-6 text-blue-600" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">Sell Pre-Loved</h3>
-              <p className="text-gray-600 mb-4">
-                Make money from clothes you no longer wear. Set your prices and connect with buyers.
-              </p>
-              <Link to="/sell-swap" className="text-blue-600 hover:text-blue-700 font-medium flex items-center">
-                Start Selling <ArrowRight className="h-4 w-4 ml-1" />
-              </Link>
-            </div>
-
-            <div className="bg-white rounded-2xl shadow-lg p-8 hover:shadow-xl transition-shadow duration-200">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-purple-100 rounded-full mb-6">
-                <Gift className="h-6 w-6 text-purple-600" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">Donate to Causes</h3>
-              <p className="text-gray-600 mb-4">
-                Support environmental and social causes by donating clothes to verified NGOs and charities.
-              </p>
-              <button 
-                onClick={handleDonateClick}
-                className="text-purple-600 hover:text-purple-700 font-medium flex items-center"
-              >
-                Donate Now <ArrowRight className="h-4 w-4 ml-1" />
-              </button>
-            </div>
-
-            <div className="bg-white rounded-2xl shadow-lg p-8 hover:shadow-xl transition-shadow duration-200">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-orange-100 rounded-full mb-6">
-                <Leaf className="h-6 w-6 text-orange-600" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">Eco-Friendly</h3>
-              <p className="text-gray-600 mb-4">
-                Every swap, sale, and donation reduces fashion waste and carbon footprint. Join the movement.
-              </p>
-              <Link to="/about" className="text-orange-600 hover:text-orange-700 font-medium flex items-center">
-                Learn More <ArrowRight className="h-4 w-4 ml-1" />
-              </Link>
-            </div>
-
-            <div className="bg-white rounded-2xl shadow-lg p-8 hover:shadow-xl transition-shadow duration-200">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-pink-100 rounded-full mb-6">
-                <Heart className="h-6 w-6 text-pink-600" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">Trusted Community</h3>
-              <p className="text-gray-600 mb-4">
-                Connect with verified users, read reviews, and trade safely within our secure platform.
-              </p>
-              <Link to="/about" className="text-pink-600 hover:text-pink-700 font-medium flex items-center">
-                Join Community <ArrowRight className="h-4 w-4 ml-1" />
-              </Link>
-            </div>
-
-            <div className="bg-white rounded-2xl shadow-lg p-8 hover:shadow-xl transition-shadow duration-200">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-indigo-100 rounded-full mb-6">
-                <Award className="h-6 w-6 text-indigo-600" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">Earn Rewards</h3>
-              <p className="text-gray-600 mb-4">
-                Get points for every swap, sale, and donation. Unlock exclusive perks and recognition.
-              </p>
-              <Link to="/rewards" className="text-indigo-600 hover:text-indigo-700 font-medium flex items-center">
-                View Rewards <ArrowRight className="h-4 w-4 ml-1" />
-              </Link>
-            </div>
           </div>
         </div>
       </section>
 
-      {/* Featured Items */}
-      <section className="py-20 bg-white">
+      {/* ── Stats Bar ── */}
+      <section className="bg-[#108c4b] py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center mb-12">
-            <div>
-              <h2 className="text-4xl font-bold text-gray-900 mb-4">Featured Items</h2>
-              <p className="text-xl text-gray-600">Discover the most popular items on EcoCloset</p>
-            </div>
-            <Link
-              to="/items"
-              className="text-green-600 hover:text-green-700 font-medium flex items-center"
-            >
-              View All <ArrowRight className="h-4 w-4 ml-1" />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featuredItems.map((item) => (
-              <div key={item.id} className="group">
-                <div className="relative overflow-hidden rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-200">
-                  <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200">
-                    <img 
-                      src={item.images?.[0] || 'https://via.placeholder.com/300x300'} 
-                      alt={item.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                    />
-                  </div>
-                  <div className="absolute top-4 right-4">
-                    <button className="p-2 bg-white rounded-full shadow-md hover:shadow-lg transition-shadow duration-200">
-                      <Heart className="h-4 w-4 text-gray-600 hover:text-red-500" />
-                    </button>
-                  </div>
-                  {item.type === 'swap' && (
-                    <div className="absolute top-4 left-4">
-                      <span className="px-3 py-1 bg-blue-600 text-white text-xs rounded-full">
-                        Swap
-                      </span>
-                    </div>
-                  )}
-                  {item.type === 'donation' && (
-                    <div className="absolute top-4 left-4">
-                      <span className="px-3 py-1 bg-green-600 text-white text-xs rounded-full">
-                        Donate
-                      </span>
-                    </div>
-                  )}
-                </div>
-                <div className="mt-4">
-                  <h3 className="font-semibold text-gray-900 mb-1">{item.title}</h3>
-                  <p className="text-sm text-gray-600 mb-2">{item.category}</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-lg font-bold text-green-600">₹{item.price}</span>
-                    <div className="flex items-center space-x-1">
-                      <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                      <span className="text-sm text-gray-600">4.5</span>
-                    </div>
-                  </div>
-                </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-white text-center">
+            {[
+              { label: 'Items Available', value: (stats.totalItems ?? 0).toLocaleString(), icon: Package },
+              { label: 'Active Users', value: (stats.totalUsers ?? 0).toLocaleString(), icon: Users },
+              { label: 'Items Swapped', value: (stats.itemsSwapped ?? 0).toLocaleString(), icon: Recycle },
+              { label: 'kg CO₂ Saved', value: (stats.co2Saved ?? 0).toLocaleString(), icon: Leaf },
+            ].map((stat) => (
+              <div key={stat.label} className="flex flex-col items-center gap-1">
+                <stat.icon className="h-6 w-6 text-green-200 mb-1" />
+                <div className="text-3xl font-extrabold">{isLoading ? '—' : stat.value}</div>
+                <div className="text-green-200 text-sm font-medium">{stat.label}</div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-green-600 to-blue-600">
+      {/* ── Category Browsing ── */}
+      <section className="py-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-extrabold text-gray-900">Browse by Category</h2>
+            <p className="text-gray-500 mt-2">Find exactly what you're looking for</p>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+            {CATEGORIES.map((cat) => (
+              <Link
+                key={cat.name}
+                to={`/browse?category=${cat.name}`}
+                className={`group flex flex-col items-center gap-3 ${cat.bg} rounded-2xl p-5 text-center hover:shadow-md transition-all hover:-translate-y-1 border border-transparent hover:border-gray-200`}
+              >
+                <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${cat.color} flex items-center justify-center text-2xl shadow-sm group-hover:scale-110 transition-transform`}>
+                  {cat.emoji}
+                </div>
+                <span className={`text-sm font-bold ${cat.text}`}>{cat.name}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Featured Items ── */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between mb-10">
+            <div>
+              <h2 className="text-3xl font-extrabold text-gray-900">Featured Items</h2>
+              <p className="text-gray-500 mt-1">Discover the most popular items on EcoCloset</p>
+            </div>
+            <Link to="/browse" className="flex items-center gap-1.5 text-[#108c4b] hover:text-[#0d7a40] font-semibold transition-colors">
+              View All <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+
+          {featuredItems.length === 0 && !isLoading ? (
+            <div className="text-center py-12 bg-gray-50 rounded-2xl">
+              <Package className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+              <p className="text-gray-500 font-medium">No items yet. Be the first to list one!</p>
+              <Link to="/add-listing" className="mt-4 inline-flex items-center gap-2 px-5 py-2.5 bg-[#108c4b] text-white rounded-xl text-sm font-semibold hover:bg-[#0d7a40]">
+                <Recycle className="h-4 w-4" /> Add Listing
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {(isLoading ? Array(8).fill(null) : featuredItems).map((item, idx) => (
+                isLoading ? (
+                  <div key={idx} className="bg-gray-100 rounded-2xl overflow-hidden animate-pulse">
+                    <div className="h-56 bg-gray-200" />
+                    <div className="p-4 space-y-2">
+                      <div className="h-4 bg-gray-200 rounded w-3/4" />
+                      <div className="h-3 bg-gray-200 rounded w-1/2" />
+                      <div className="h-5 bg-gray-200 rounded w-1/3 mt-2" />
+                    </div>
+                  </div>
+                ) : (
+                  <Link to={`/items/${item.id}`} key={item.id} className="group block">
+                    <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                      <div className="relative h-56 overflow-hidden bg-gray-100">
+                        <img
+                          src={item.image}
+                          alt={item.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=600&q=80'; }}
+                        />
+                        <div className="absolute top-3 right-3">
+                          <button
+                            onClick={(e) => e.preventDefault()}
+                            className="p-2 bg-white rounded-full shadow-md hover:shadow-lg transition-all hover:scale-110"
+                          >
+                            <Heart className="h-4 w-4 text-gray-400 hover:text-red-500 transition-colors" />
+                          </button>
+                        </div>
+                        <div className="absolute top-3 left-3">
+                          <span className={`px-2.5 py-1 text-xs font-bold rounded-lg ${
+                            item.listingType === 'sell' ? 'bg-white/90 text-gray-900' :
+                            item.listingType === 'swap' ? 'bg-blue-600 text-white' :
+                            'bg-[#108c4b] text-white'
+                          }`}>
+                            {item.listingType === 'sell' ? 'For Sale' : item.listingType === 'swap' ? 'Swap' : 'Donate'}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="p-4">
+                        <h3 className="font-bold text-gray-900 mb-1 truncate">{item.title}</h3>
+                        <p className="text-xs text-gray-500 mb-3">{item.category}{item.size ? ` • Size ${item.size}` : ''}</p>
+                        <div className="flex items-center justify-between">
+                          <span className="text-lg font-extrabold text-[#108c4b]">
+                            {item.listingType === 'sell' ? `₹${(item.price || 0).toLocaleString('en-IN')}` : 
+                             item.listingType === 'swap' ? 'Swap' : 'Free'}
+                          </span>
+                          <div className="flex items-center gap-1">
+                            <Star className="h-3.5 w-3.5 text-yellow-400 fill-current" />
+                            <span className="text-xs text-gray-500">4.5</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                )
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* ── How It Works ── */}
+      <section className="py-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-extrabold text-gray-900">How EcoCloset Works</h2>
+            <p className="text-gray-500 mt-2 max-w-xl mx-auto">Three simple ways to give your clothes a second life</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              { title: 'Sell', desc: 'List your pre-loved items at your price. Connect with buyers who appreciate sustainable fashion.', icon: ShoppingCart, iconBg: 'bg-green-100', iconColor: 'text-green-700', link: '/sell', cta: 'Start Selling' },
+              { title: 'Swap', desc: 'Exchange clothing with other users. Find unique pieces while clearing your closet for free.', icon: Recycle, iconBg: 'bg-blue-100', iconColor: 'text-blue-700', link: '/swap', cta: 'Start Swapping' },
+              { title: 'Donate', desc: 'Give clothes to verified NGOs or users in need. Make a real difference in your community.', icon: Gift, iconBg: 'bg-rose-100', iconColor: 'text-rose-700', link: '/donate', cta: 'Donate Now' },
+            ].map((item) => (
+              <div key={item.title} className="bg-white rounded-2xl p-8 border border-gray-100 hover:shadow-lg transition-all hover:-translate-y-1">
+                <div className={`inline-flex p-3 ${item.iconBg} rounded-xl mb-5`}>
+                  <item.icon className={`h-7 w-7 ${item.iconColor}`} />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">{item.title}</h3>
+                <p className="text-gray-500 mb-5 leading-relaxed">{item.desc}</p>
+                <Link to={item.link} className={`inline-flex items-center gap-1.5 text-sm font-semibold ${item.iconColor} hover:gap-2.5 transition-all`}>
+                  {item.cta} <ArrowRight className="h-4 w-4" />
+                </Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── CTA Section ── */}
+      <section className="py-16 bg-gradient-to-r from-[#108c4b] to-[#0f7a43]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl font-bold text-white mb-6">
+          <h2 className="text-3xl font-extrabold text-white mb-4">
             Ready to Join the Sustainable Fashion Revolution?
           </h2>
-          <p className="text-xl mb-8 text-green-100">
-            Join thousands of users making a positive impact on the environment.
+          <p className="text-green-100 text-lg mb-8 max-w-xl mx-auto">
+            Join thousands of users making a positive impact on the environment through conscious fashion choices.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              to="/login"
-              className="px-8 py-4 bg-white text-green-600 rounded-full font-semibold hover:bg-gray-100 transition-colors flex items-center justify-center"
-            >
-              <Sparkles className="h-5 w-5 mr-2" />
-              Login to Get Started
+            <Link to="/browse" className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-white text-[#108c4b] rounded-xl font-bold hover:bg-green-50 transition-colors shadow">
+              <ShoppingBag className="h-5 w-5" /> Browse Items
             </Link>
-            <Link
-              to="/items"
-              className="px-8 py-4 bg-transparent border-2 border-white text-white rounded-full font-semibold hover:bg-white hover:text-green-600 transition-colors flex items-center justify-center"
-            >
-              <Package className="h-5 w-5 mr-2" />
-              Browse Items
+            <Link to="/add-listing" className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-transparent border-2 border-white text-white rounded-xl font-bold hover:bg-white/10 transition-colors">
+              <Recycle className="h-5 w-5" /> List Your First Item
             </Link>
           </div>
         </div>

@@ -359,6 +359,7 @@ app.use("/api/admin", isAdmin, require("./routes/admin"));
 app.use("/api/items", require("./routes/items"));
 app.use("/api/categories", require("./routes/categories"));
 app.use("/api/messages", isAuth, require("./routes/messages"));
+app.use("/api/donations", require("./routes/donations"));
 console.log("Modular routes registered.");
 
 const PORT = 5000;

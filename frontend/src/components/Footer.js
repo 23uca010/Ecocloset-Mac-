@@ -1,95 +1,76 @@
 import React from 'react';
-import { Facebook, Twitter, Instagram, Mail, Phone, MapPin, ShoppingBag } from 'lucide-react';
+import { Facebook, Twitter, Instagram, Leaf } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Footer = () => {
   return (
-    <footer className="bg-gray-900 text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Company Info */}
-          <div className="col-span-1 md:col-span-2">
-            <div className="flex items-center space-x-2 mb-4">
-              <ShoppingBag className="h-8 w-8 text-green-400" />
-              <span className="text-xl font-bold">EcoCloset</span>
-            </div>
-            <p className="text-gray-300 mb-4 max-w-md">
-              Join the sustainable fashion revolution. Swap, donate, and give pre-loved clothing a second chance while reducing fashion waste.
+    <footer className="bg-[#f8f9fa] border-t border-gray-200 mt-auto">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
+          
+          {/* Brand & Info */}
+          <div className="col-span-1 md:col-span-1">
+            <Link to="/home" className="flex items-center gap-2 mb-6">
+              <div className="bg-[#108c4b] p-1.5 rounded-lg">
+                <Leaf className="h-6 w-6 text-white" strokeWidth={2.5} />
+              </div>
+              <span className="text-2xl font-bold text-gray-900 tracking-tight">EcoCloset</span>
+            </Link>
+            <p className="text-gray-600 leading-relaxed mb-8 max-w-sm">
+              Join the sustainable fashion revolution. Swap, sell, and give pre-loved clothing a second chance while reducing fashion waste.
             </p>
-            <div className="flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-green-400 transition-colors">
-                <Facebook className="h-5 w-5" />
-              </a>
-              <a href="#" className="text-gray-400 hover:text-green-400 transition-colors">
-                <Twitter className="h-5 w-5" />
-              </a>
-              <a href="#" className="text-gray-400 hover:text-green-400 transition-colors">
-                <Instagram className="h-5 w-5" />
-              </a>
-            </div>
           </div>
 
-          {/* Quick Links */}
+          {/* Shop */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
-            <ul className="space-y-2">
-              <li><a href="/items" className="text-gray-300 hover:text-green-400 transition-colors">Browse Items</a></li>
-              <li><a href="/dashboard" className="text-gray-300 hover:text-green-400 transition-colors">My Dashboard</a></li>
-              <li><a href="/swaps" className="text-gray-300 hover:text-green-400 transition-colors">Swap Requests</a></li>
-              <li><a href="/donations" className="text-gray-300 hover:text-green-400 transition-colors">Donations</a></li>
-              <li><a href="/about" className="text-gray-300 hover:text-green-400 transition-colors">About Us</a></li>
-              <li><a href="/contact" className="text-gray-300 hover:text-green-400 transition-colors">Contact</a></li>
+            <h3 className="text-[1.1rem] font-bold text-gray-900 mb-6">Shop</h3>
+            <ul className="space-y-4">
+              <li><Link to="/browse" className="text-gray-600 hover:text-green-700 transition-colors">Browse All</Link></li>
+              <li><Link to="/browse?category=Tops" className="text-gray-600 hover:text-green-700 transition-colors">Tops</Link></li>
+              <li><Link to="/browse?category=Bottoms" className="text-gray-600 hover:text-green-700 transition-colors">Bottoms</Link></li>
+              <li><Link to="/browse?category=Shoes" className="text-gray-600 hover:text-green-700 transition-colors">Shoes</Link></li>
             </ul>
           </div>
 
-          {/* Contact Info */}
+          {/* Community */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Contact Us</h3>
-            <div className="space-y-3">
-              <div className="flex items-center space-x-2">
-                <Mail className="h-4 w-4 text-green-400" />
-                <span className="text-gray-300">support@ecocloset.com</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Phone className="h-4 w-4 text-green-400" />
-                <span className="text-gray-300">+1 (555) 123-4567</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <MapPin className="h-4 w-4 text-green-400" />
-                <span className="text-gray-300">123 Green Street, Eco City, EC 12345</span>
-              </div>
-            </div>
+            <h3 className="text-[1.1rem] font-bold text-gray-900 mb-6">Community</h3>
+            <ul className="space-y-4">
+              <li><Link to="/sell-swap" className="text-gray-600 hover:text-green-700 transition-colors">List an Item</Link></li>
+              <li><Link to="/donate" className="text-gray-600 hover:text-green-700 transition-colors">Donate to NGOs</Link></li>
+              <li><Link to="/about" className="text-gray-600 hover:text-green-700 transition-colors">How It Works</Link></li>
+              <li><Link to="/sustainability" className="text-gray-600 hover:text-green-700 transition-colors">Sustainability</Link></li>
+            </ul>
           </div>
-        </div>
 
-        {/* Newsletter */}
-        <div className="mt-8 pt-8 border-t border-gray-800">
-          <div className="text-center">
-            <h3 className="text-lg font-semibold mb-4">Stay Updated</h3>
-            <p className="text-gray-300 mb-4">Subscribe to our newsletter for the latest eco-fashion trends and updates.</p>
-            <div className="max-w-md mx-auto flex">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="flex-1 px-4 py-2 rounded-l-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-400"
-              />
-              <button className="bg-green-600 hover:bg-green-700 px-6 py-2 rounded-r-lg font-medium transition-colors">
-                Subscribe
-              </button>
-            </div>
+          {/* Support */}
+          <div>
+            <h3 className="text-[1.1rem] font-bold text-gray-900 mb-6">Support</h3>
+            <ul className="space-y-4">
+              <li><Link to="/help" className="text-gray-600 hover:text-green-700 transition-colors">Help Center</Link></li>
+              <li><Link to="/safety" className="text-gray-600 hover:text-green-700 transition-colors">Safety Tips</Link></li>
+              <li><Link to="/contact" className="text-gray-600 hover:text-green-700 transition-colors">Contact Us</Link></li>
+              <li><Link to="/terms" className="text-gray-600 hover:text-green-700 transition-colors">Terms of Service</Link></li>
+            </ul>
           </div>
+
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-8 pt-8 border-t border-gray-800">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-400 text-sm">
-              © 2024 EcoCloset. All rights reserved.
-            </p>
-            <div className="flex space-x-6 mt-4 md:mt-0">
-              <a href="/privacy" className="text-gray-400 hover:text-green-400 text-sm transition-colors">Privacy Policy</a>
-              <a href="/terms" className="text-gray-400 hover:text-green-400 text-sm transition-colors">Terms of Service</a>
-              <a href="/sustainability" className="text-gray-400 hover:text-green-400 text-sm transition-colors">Sustainability</a>
-            </div>
+        <div className="mt-16 pt-8 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center gap-6">
+          <p className="text-gray-500">
+            © {new Date().getFullYear()} EcoCloset. All rights reserved.
+          </p>
+          <div className="flex space-x-6">
+            <a href="#" className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-gray-400 hover:text-green-600 hover:shadow-md transition-all shadow-sm border border-gray-100">
+              <Facebook className="h-5 w-5" />
+            </a>
+            <a href="#" className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-gray-400 hover:text-green-600 hover:shadow-md transition-all shadow-sm border border-gray-100">
+              <Twitter className="h-5 w-5" />
+            </a>
+            <a href="#" className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-gray-400 hover:text-green-600 hover:shadow-md transition-all shadow-sm border border-gray-100">
+              <Instagram className="h-5 w-5" />
+            </a>
           </div>
         </div>
       </div>

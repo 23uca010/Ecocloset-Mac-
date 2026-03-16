@@ -1,35 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useCart } from '../context/CartContext';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { 
-  ArrowLeft, 
   Camera, 
   Upload, 
   X, 
-  Plus, 
   Package, 
   Tag, 
   IndianRupee, 
-  MapPin, 
-  User, 
-  Heart, 
   Recycle, 
-  Gift, 
+  Heart, 
   CheckCircle, 
   AlertCircle,
-  Image as ImageIcon,
-  Settings,
-  LogOut,
-  Bell,
-  Search,
-  ChevronDown
+  ShoppingBag,
+  Info,
+  Plus
 } from 'lucide-react';
 
 const SellSwap = () => {
-  const { isAuthenticated, user } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -68,7 +60,20 @@ const SellSwap = () => {
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     
-    if (name.includes('.')) {
+    if (name.startsWith('swapPreferences.') && type === 'checkbox') {
+      const child = name.split('.')[1];
+      const currentArray = formData.swapPreferences[child] || [];
+      const newArray = checked
+        ? [...currentArray, value]
+        : currentArray.filter(item => item !== value);
+      setFormData(prev => ({
+        ...prev,
+        swapPreferences: {
+          ...prev.swapPreferences,
+          [child]: newArray
+        }
+      }));
+    } else if (name.includes('.')) {
       const [parent, child] = name.split('.');
       setFormData(prev => ({
         ...prev,
@@ -77,21 +82,6 @@ const SellSwap = () => {
           [child]: type === 'checkbox' ? checked : value
         }
       }));
-    } else if (name.includes('swapPreferences')) {
-      const [parent, child] = name.split('.');
-      if (type === 'checkbox') {
-        const currentArray = formData.swapPreferences[child] || [];
-        const newArray = checked
-          ? [...currentArray, value]
-          : currentArray.filter(item => item !== value);
-        setFormData(prev => ({
-          ...prev,
-          swapPreferences: {
-            ...prev.swapPreferences,
-            [child]: newArray
-          }
-        }));
-      }
     } else {
       setFormData(prev => ({
         ...prev,
@@ -118,23 +108,23 @@ const SellSwap = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    
     if (!formData.title.trim()) newErrors.title = 'Title is required';
     if (!formData.description.trim()) newErrors.description = 'Description is required';
     if (!formData.category) newErrors.category = 'Category is required';
     if (!formData.condition) newErrors.condition = 'Condition is required';
     if ((formData.type === 'sell' || formData.type === 'both') && !formData.price) newErrors.price = 'Price is required for sale items';
     if ((formData.type === 'sell' || formData.type === 'both') && formData.price && parseFloat(formData.price) <= 0) newErrors.price = 'Price must be greater than 0';
-    
     if (previewImages.length === 0) newErrors.images = 'At least one image is required';
     
     setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
     if (!validateForm()) return;
     
     setIsSubmitting(true);
@@ -169,35 +159,9 @@ const SellSwap = () => {
         throw new Error(data.message || 'Failed to list item');
       }
       
-      // Reset form
-      setFormData({
-        title: '',
-        description: '',
-        category: '',
-        size: '',
-        color: '',
-        brand: '',
-        condition: '',
-        type: 'swap',
-        price: '',
-        swapPreferences: {
-          categories: [],
-          sizes: [],
-          colors: [],
-          notes: ''
-        },
-        donationInfo: {
-          preferredNGO: '',
-          pickupAvailable: false,
-          pickupAddress: ''
-        }
-      });
-      setPreviewImages([]);
-      
-      // Show success message
       setSubmitSuccess(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       
-      // Redirect to dashboard after 2 seconds
       setTimeout(() => {
         navigate('/items');
       }, 2000);
@@ -205,647 +169,433 @@ const SellSwap = () => {
     } catch (error) {
       console.error('Error listing item:', error);
       setSubmitError(error.message || 'Failed to list item. Please try again.');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            {/* Left Side - Logo and Title */}
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <Recycle className="h-8 w-8 text-green-600" />
-                <h1 className="text-2xl font-bold text-gray-900">EcoCloset</h1>
-              </div>
-              <div className="hidden md:block text-gray-500">|</div>
-              <div className="hidden md:block">
-                <h2 className="text-lg font-semibold text-gray-700">List Your Item</h2>
-              </div>
-            </div>
-
-            {/* Right Side - User Profile */}
-            <div className="flex items-center space-x-4">
-              {/* Search Bar */}
-              <div className="hidden md:flex items-center bg-gray-100 rounded-lg px-3 py-2">
-                <Search className="h-4 w-4 text-gray-400 mr-2" />
-                <input
-                  type="text"
-                  placeholder="Search items..."
-                  className="bg-transparent outline-none text-sm w-48"
-                />
-              </div>
-
-              {/* Notifications */}
-              <button className="relative p-2 text-gray-600 hover:text-gray-900">
-                <Bell className="h-5 w-5" />
-                <span className="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full"></span>
-              </button>
-
-              {/* User Profile Dropdown */}
-              <div className="flex items-center space-x-3">
-                <div className="text-right hidden md:block">
-                  <p className="text-sm font-semibold text-gray-900">{user?.firstName || user?.email?.split('@')[0] || 'Guest'}</p>
-                  <p className="text-xs text-gray-500">Premium Member</p>
-                </div>
-                <div className="relative group">
-                  <button className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-colors">
-                    <div className="h-8 w-8 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center">
-                      <User className="h-4 w-4 text-white" />
-                    </div>
-                    <ChevronDown className="h-4 w-4 text-gray-600" />
-                  </button>
-                  
-                  {/* Dropdown Menu */}
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-                    <Link to="/profile" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                      <User className="h-4 w-4 mr-2" />
-                      My Profile
-                    </Link>
-                    <Link to="/dashboard" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                      <Package className="h-4 w-4 mr-2" />
-                      My Listings
-                    </Link>
-                    <Link to="/settings" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                      <Settings className="h-4 w-4 mr-2" />
-                      Settings
-                    </Link>
-                    <hr className="my-1" />
-                    <button 
-                      onClick={() => {
-                        // Handle logout
-                        navigate('/login');
-                      }}
-                      className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                    >
-                      <LogOut className="h-4 w-4 mr-2" />
-                      Sign Out
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
+    <div className="min-h-screen bg-[#F8FAFC] pb-20 font-sans">
+      {/* Hero Section */}
+      <section className="bg-[#1e1b4b] text-white py-24 px-4 relative overflow-hidden">
+        <div className="max-w-4xl mx-auto text-center relative z-10">
+          <div className="w-20 h-20 mx-auto rounded-full border-[3px] border-white/40 flex items-center justify-center mb-8 bg-white/10 backdrop-blur-sm">
+            <ShoppingBag className="h-10 w-10 text-white" strokeWidth={1.5} />
           </div>
+          <h1 className="text-4xl md:text-6xl font-extrabold mb-6 tracking-tight">
+            List Your Item
+          </h1>
+          <p className="text-lg md:text-2xl text-indigo-100 max-w-4xl mx-auto font-light leading-relaxed">
+            Give your pre-loved fashion a second life. Choose to swap, sell, or donate your clothes and join the circular fashion movement.
+          </p>
         </div>
-      </div>
+        
+        {/* Decorative background blur */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/20 rounded-full blur-[100px] pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-500/20 rounded-full blur-[100px] pointer-events-none"></div>
+      </section>
 
-      {/* Main Content - List Your Item Only */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Page Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">List Your Item</h1>
-          <p className="text-lg text-gray-600">List your clothing items for swap or sale on EcoCloset</p>
-        </div>
-
-        {/* Success Message */}
+      {/* Main Content */}
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-16">
+        
+        {/* Status Messages */}
         {submitSuccess && (
-          <div className="mb-8 bg-green-50 border border-green-200 rounded-xl p-6 flex items-center">
-            <CheckCircle className="h-6 w-6 text-green-600 mr-3" />
+          <div className="mb-10 bg-[#e6f6eb] border-l-4 border-[#108c4b] rounded-r-xl p-6 flex items-start shadow-sm">
+            <CheckCircle className="h-6 w-6 text-[#108c4b] mr-4 shrink-0 mt-0.5" />
             <div>
-              <h3 className="text-lg font-semibold text-green-800">Item Listed Successfully!</h3>
-              <p className="text-green-700">Your item has been listed and will be visible to other users. Redirecting to dashboard...</p>
+              <h3 className="text-lg font-bold text-[#108c4b] mb-1">Item Listed Successfully!</h3>
+              <p className="text-[#108c4b]/80 font-medium">Your item has been listed and will be visible to other users. Redirecting to your items...</p>
             </div>
           </div>
         )}
 
-        {/* Error Message */}
         {submitError && (
-          <div className="mb-8 bg-red-50 border border-red-200 rounded-xl p-6 flex items-center">
-            <AlertCircle className="h-6 w-6 text-red-600 mr-3" />
+          <div className="mb-10 bg-red-50 border-l-4 border-red-500 rounded-r-xl p-6 flex items-start shadow-sm">
+            <AlertCircle className="h-6 w-6 text-red-600 mr-4 shrink-0 mt-0.5" />
             <div>
-              <h3 className="text-lg font-semibold text-red-800">Error</h3>
-              <p className="text-red-700">{submitError}</p>
+              <h3 className="text-lg font-bold text-red-800 mb-1">Error Listing Item</h3>
+              <p className="text-red-700 font-medium">{submitError}</p>
             </div>
           </div>
         )}
 
-        {/* List Your Item Form - Two Column Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {Object.keys(errors).length > 0 && !submitSuccess && !submitError && (
+          <div className="mb-10 bg-orange-50 border-l-4 border-orange-500 rounded-r-xl p-6 flex items-start shadow-sm">
+            <Info className="h-6 w-6 text-orange-600 mr-4 shrink-0 mt-0.5" />
+            <div>
+              <h3 className="text-lg font-bold text-orange-800 mb-1">Please fix the following errors:</h3>
+              <ul className="list-disc list-inside text-orange-700 font-medium space-y-1">
+                {Object.values(errors).map((err, i) => (
+                  <li key={i}>{err}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-10">
+          
           {/* Left Column - Main Form */}
-          <div className="lg:col-span-2 space-y-6">
-            <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="xl:col-span-2 space-y-10">
+            <form id="listing-form" onSubmit={handleSubmit} className="space-y-10">
               
               {/* Basic Information Section */}
-              <div className="bg-white rounded-xl shadow-lg p-8 border border-gray-100">
-                <div className="flex items-center mb-8">
-                  <div className="bg-green-100 p-4 rounded-xl mr-4">
-                    <Tag className="h-7 w-7 text-green-600" />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-gray-900">Basic Information</h2>
-                    <p className="text-base text-gray-600">Tell us about your item</p>
+              <div className="bg-white rounded-[1.5rem] shadow-sm border border-gray-100 overflow-hidden">
+                <div className="border-b border-gray-100 p-8 sm:p-10 bg-gray-50/50">
+                  <div className="flex items-center">
+                    <div className="bg-white p-3 rounded-xl shadow-sm mr-5 border border-gray-100 text-indigo-600">
+                      <Tag className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-900">Basic Information</h2>
+                      <p className="text-gray-500 mt-1 font-medium">Tell us what you are listing.</p>
+                    </div>
                   </div>
                 </div>
                 
-                <div className="space-y-8">
+                <div className="p-8 sm:p-10 space-y-8">
                   <div>
-                    <label className="block text-base font-semibold text-gray-700 mb-3">
-                      Item Title *
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        name="title"
-                        value={formData.title}
-                        onChange={handleInputChange}
-                        className="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all pl-14 text-base"
-                        placeholder="e.g., Vintage Denim Jacket"
-                      />
-                      <Tag className="absolute left-5 top-4 h-5 w-5 text-gray-400" />
-                    </div>
-                    {errors.title && (
-                      <p className="text-red-500 text-sm mt-2 flex items-center">
-                        <AlertCircle className="h-4 w-4 mr-1" />
-                        {errors.title}
-                      </p>
-                    )}
+                    <label className="block text-[1.05rem] font-bold text-gray-800 mb-3">Item Title <span className="text-red-500">*</span></label>
+                    <input
+                      type="text"
+                      name="title"
+                      value={formData.title}
+                      onChange={handleInputChange}
+                      className="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-gray-900 text-lg bg-gray-50 focus:bg-white"
+                      placeholder="e.g., Vintage Denim Jacket"
+                    />
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div>
-                      <label className="block text-base font-semibold text-gray-700 mb-3">
-                        Brand
-                      </label>
-                      <div className="relative">
-                        <input
-                          type="text"
-                          name="brand"
-                          value={formData.brand}
-                          onChange={handleInputChange}
-                          className="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all pl-14 text-base"
-                          placeholder="e.g., Levi's, H&M"
-                        />
-                        <Package className="absolute left-5 top-4 h-5 w-5 text-gray-400" />
-                      </div>
+                      <label className="block text-[1.05rem] font-bold text-gray-800 mb-3">Brand</label>
+                      <input
+                        type="text"
+                        name="brand"
+                        value={formData.brand}
+                        onChange={handleInputChange}
+                        className="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-gray-900 text-lg bg-gray-50 focus:bg-white"
+                        placeholder="e.g., Levi's, H&M"
+                      />
                     </div>
                     
                     <div>
-                      <label className="block text-base font-semibold text-gray-700 mb-3">
-                        Price *
-                      </label>
+                      <label className="block text-[1.05rem] font-bold text-gray-800 mb-3">Price (₹) <span className="text-red-500">*</span></label>
                       <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+                          <IndianRupee className="h-5 w-5 text-gray-400" />
+                        </div>
                         <input
-                          type="text"
+                          type="number"
                           name="price"
                           value={formData.price}
                           onChange={handleInputChange}
-                          className="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all pl-14 text-base"
+                          className="w-full pl-12 pr-5 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-gray-900 text-lg bg-gray-50 focus:bg-white"
                           placeholder="0"
                         />
-                        <IndianRupee className="absolute left-5 top-4 h-5 w-5 text-gray-400" />
                       </div>
-                      {errors.price && (
-                        <p className="text-red-500 text-sm mt-2 flex items-center">
-                          <AlertCircle className="h-4 w-4 mr-1" />
-                          {errors.price}
-                        </p>
-                      )}
                     </div>
                   </div>
                   
                   <div>
-                    <label className="block text-base font-semibold text-gray-700 mb-3">
-                      Description *
-                    </label>
-                    <div className="relative">
-                      <textarea
-                        name="description"
-                        value={formData.description}
-                        onChange={handleInputChange}
-                        rows={5}
-                        className="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all resize-none text-base"
-                        placeholder="Describe your item, its condition, and any special features..."
-                      />
-                    </div>
-                    {errors.description && (
-                      <p className="text-red-500 text-sm mt-2 flex items-center">
-                        <AlertCircle className="h-4 w-4 mr-1" />
-                        {errors.description}
-                      </p>
-                    )}
+                    <label className="block text-[1.05rem] font-bold text-gray-800 mb-3">Description <span className="text-red-500">*</span></label>
+                    <textarea
+                      name="description"
+                      value={formData.description}
+                      onChange={handleInputChange}
+                      rows={5}
+                      className="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-gray-900 text-lg bg-gray-50 focus:bg-white resize-none"
+                      placeholder="Describe your item, its condition, and any special features..."
+                    />
                   </div>
                 </div>
               </div>
 
               {/* Item Details Section */}
-              <div className="bg-white rounded-xl shadow-lg p-8 border border-gray-100">
-                <div className="flex items-center mb-8">
-                  <div className="bg-blue-100 p-4 rounded-xl mr-4">
-                    <Package className="h-7 w-7 text-blue-600" />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-gray-900">Item Details</h2>
-                    <p className="text-base text-gray-600">Specify the details of your item</p>
+              <div className="bg-white rounded-[1.5rem] shadow-sm border border-gray-100 overflow-hidden">
+                <div className="border-b border-gray-100 p-8 sm:p-10 bg-gray-50/50">
+                  <div className="flex items-center">
+                    <div className="bg-white p-3 rounded-xl shadow-sm mr-5 border border-gray-100 text-[#0f8c85]">
+                      <Package className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-900">Item Specifications</h2>
+                      <p className="text-gray-500 mt-1 font-medium">Categorize your item correctly.</p>
+                    </div>
                   </div>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="p-8 sm:p-10 grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div>
-                    <label className="block text-base font-semibold text-gray-700 mb-3">
-                      Category *
-                    </label>
-                    <div className="relative">
-                      <select
-                        name="category"
-                        value={formData.category}
-                        onChange={handleInputChange}
-                        className="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all appearance-none bg-white text-base"
-                      >
-                        <option value="">Select Category</option>
-                        {categories.map(cat => (
-                          <option key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</option>
-                        ))}
-                      </select>
-                      <div className="absolute right-5 top-4 pointer-events-none">
-                        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </div>
-                    </div>
-                    {errors.category && (
-                      <p className="text-red-500 text-sm mt-2 flex items-center">
-                        <AlertCircle className="h-4 w-4 mr-1" />
-                        {errors.category}
-                      </p>
-                    )}
+                    <label className="block text-[1.05rem] font-bold text-gray-800 mb-3">Category <span className="text-red-500">*</span></label>
+                    <select
+                      name="category"
+                      value={formData.category}
+                      onChange={handleInputChange}
+                      className="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all bg-gray-50 focus:bg-white text-lg font-medium text-gray-700"
+                    >
+                      <option value="">Select Category</option>
+                      {categories.map(cat => (
+                        <option key={cat} value={cat}>{cat}</option>
+                      ))}
+                    </select>
                   </div>
                   
                   <div>
-                    <label className="block text-base font-semibold text-gray-700 mb-3">
-                      Size
-                    </label>
-                    <div className="relative">
-                      <select
-                        name="size"
-                        value={formData.size}
-                        onChange={handleInputChange}
-                        className="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all appearance-none bg-white text-base"
-                      >
-                        <option value="">Select Size</option>
-                        {sizes.map(size => (
-                          <option key={size} value={size}>{size}</option>
-                        ))}
-                      </select>
-                      <div className="absolute right-5 top-4 pointer-events-none">
-                        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </div>
-                    </div>
+                    <label className="block text-[1.05rem] font-bold text-gray-800 mb-3">Condition <span className="text-red-500">*</span></label>
+                    <select
+                      name="condition"
+                      value={formData.condition}
+                      onChange={handleInputChange}
+                      className="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all bg-gray-50 focus:bg-white text-lg font-medium text-gray-700"
+                    >
+                      <option value="">Select Condition</option>
+                      {conditions.map(c => (
+                        <option key={c} value={c}>{c.replace('_', ' ').toUpperCase()}</option>
+                      ))}
+                    </select>
                   </div>
-                  
+
                   <div>
-                    <label className="block text-base font-semibold text-gray-700 mb-3">
-                      Color
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        name="color"
-                        value={formData.color}
-                        onChange={handleInputChange}
-                        className="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all text-base"
-                        placeholder="e.g., Blue, Black"
-                      />
-                    </div>
+                    <label className="block text-[1.05rem] font-bold text-gray-800 mb-3">Size</label>
+                    <select
+                      name="size"
+                      value={formData.size}
+                      onChange={handleInputChange}
+                      className="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all bg-gray-50 focus:bg-white text-lg font-medium text-gray-700"
+                    >
+                      <option value="">Select Size</option>
+                      {sizes.map(s => (
+                        <option key={s} value={s}>{s}</option>
+                      ))}
+                    </select>
                   </div>
-                  
+
                   <div>
-                    <label className="block text-base font-semibold text-gray-700 mb-3">
-                      Condition *
-                    </label>
-                    <div className="relative">
-                      <select
-                        name="condition"
-                        value={formData.condition}
-                        onChange={handleInputChange}
-                        className="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all appearance-none bg-white text-base"
-                      >
-                        <option value="">Select Condition</option>
-                        {conditions.map(condition => (
-                          <option key={condition} value={condition}>{condition.charAt(0).toUpperCase() + condition.slice(1)}</option>
-                        ))}
-                      </select>
-                      <div className="absolute right-5 top-4 pointer-events-none">
-                        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </div>
-                    </div>
-                    {errors.condition && (
-                      <p className="text-red-500 text-sm mt-2 flex items-center">
-                        <AlertCircle className="h-4 w-4 mr-1" />
-                        {errors.condition}
-                      </p>
-                    )}
+                    <label className="block text-[1.05rem] font-bold text-gray-800 mb-3">Color</label>
+                    <input
+                      type="text"
+                      name="color"
+                      value={formData.color}
+                      onChange={handleInputChange}
+                      className="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all bg-gray-50 focus:bg-white text-lg"
+                      placeholder="e.g., Navy Blue"
+                    />
                   </div>
-                  
-                  <div>
-                    <label className="block text-base font-semibold text-gray-700 mb-3">
-                      Listing Type *
-                    </label>
-                    <div className="relative">
-                      <select
-                        name="type"
-                        value={formData.type}
-                        onChange={handleInputChange}
-                        className="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all appearance-none bg-white text-base"
-                      >
-                        <option value="swap">For Swap</option>
-                        <option value="sell">For Sale</option>
-                        <option value="both">For Swap & Sale</option>
-                        <option value="donate">For Donation</option>
-                      </select>
-                      <div className="absolute right-5 top-4 pointer-events-none">
-                        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </div>
+
+                  <div className="md:col-span-2 mt-4 pt-8 border-t border-gray-100">
+                    <label className="block text-[1.1rem] font-bold text-gray-900 mb-4">What do you want to do with this item? <span className="text-red-500">*</span></label>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {['swap', 'sell', 'both', 'donate'].map(t => (
+                        <label key={t} className={`
+                          cursor-pointer border-2 rounded-xl p-4 text-center transition-all font-semibold
+                          ${formData.type === t ? 'border-indigo-600 bg-indigo-50 text-indigo-700' : 'border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50'}
+                        `}>
+                          <input type="radio" name="type" value={t} checked={formData.type === t} onChange={handleInputChange} className="hidden" />
+                          <div className="capitalize text-[1.05rem]">{t.replace('both', 'Sell & Swap')}</div>
+                        </label>
+                      ))}
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Swap Preferences Section - Only show for swap or both */}
+              {/* Swap Preferences Conditional */}
               {(formData.type === 'swap' || formData.type === 'both') && (
-                <div className="bg-white rounded-xl shadow-lg p-8 border border-gray-100">
-                  <div className="flex items-center mb-8">
-                    <div className="bg-orange-100 p-4 rounded-xl mr-4">
-                      <Recycle className="h-7 w-7 text-orange-600" />
-                    </div>
-                    <div>
-                      <h2 className="text-2xl font-bold text-gray-900">Swap Preferences</h2>
-                      <p className="text-base text-gray-600">What would you like to swap this item for?</p>
+                <div className="bg-white rounded-[1.5rem] shadow-sm border border-orange-100 overflow-hidden">
+                  <div className="border-b border-orange-100 p-8 sm:p-10 bg-orange-50/50">
+                    <div className="flex items-center">
+                      <div className="bg-white p-3 rounded-xl shadow-sm mr-5 border border-orange-100 text-orange-600">
+                        <Recycle className="h-6 w-6" />
+                      </div>
+                      <div>
+                        <h2 className="text-2xl font-bold text-gray-900">Swap Preferences</h2>
+                        <p className="text-gray-500 mt-1 font-medium">What are you looking to receive?</p>
+                      </div>
                     </div>
                   </div>
                   
-                  <div className="space-y-8">
+                  <div className="p-8 sm:p-10 space-y-10">
                     <div>
-                      <label className="block text-base font-semibold text-gray-700 mb-3">
-                        Preferred Categories
-                      </label>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      <label className="block text-[1.05rem] font-bold text-gray-800 mb-4">Preferred Categories</label>
+                      <div className="flex flex-wrap gap-3">
                         {swapCategories.map(cat => (
-                          <label key={cat} className="flex items-center space-x-2 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              name="swapPreferences.categories"
-                              value={cat}
-                              checked={formData.swapPreferences.categories.includes(cat)}
-                              onChange={handleInputChange}
-                              className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-                            />
-                            <span className="text-base text-gray-700">{cat.charAt(0).toUpperCase() + cat.slice(1)}</span>
+                          <label key={cat} className={`cursor-pointer px-5 py-2.5 rounded-full border-2 text-sm font-semibold transition-all ${formData.swapPreferences.categories.includes(cat) ? 'bg-orange-600 border-orange-600 text-white' : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'}`}>
+                            <input type="checkbox" name="swapPreferences.categories" value={cat} checked={formData.swapPreferences.categories.includes(cat)} onChange={handleInputChange} className="hidden" />
+                            {cat}
                           </label>
                         ))}
                       </div>
                     </div>
                     
                     <div>
-                      <label className="block text-base font-semibold text-gray-700 mb-3">
-                        Preferred Sizes
-                      </label>
-                      <div className="grid grid-cols-4 gap-3">
+                      <label className="block text-[1.05rem] font-bold text-gray-800 mb-4">Preferred Sizes</label>
+                      <div className="flex flex-wrap gap-3">
                         {sizes.map(size => (
-                          <label key={size} className="flex items-center space-x-2 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              name="swapPreferences.sizes"
-                              value={size}
-                              checked={formData.swapPreferences.sizes.includes(size)}
-                              onChange={handleInputChange}
-                              className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-                            />
-                            <span className="text-base text-gray-700">{size}</span>
+                          <label key={size} className={`cursor-pointer px-5 py-2.5 rounded-full border-2 text-sm font-semibold transition-all ${formData.swapPreferences.sizes.includes(size) ? 'bg-orange-600 border-orange-600 text-white' : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'}`}>
+                            <input type="checkbox" name="swapPreferences.sizes" value={size} checked={formData.swapPreferences.sizes.includes(size)} onChange={handleInputChange} className="hidden" />
+                            {size}
                           </label>
                         ))}
                       </div>
                     </div>
-                    
+
                     <div>
-                      <label className="block text-base font-semibold text-gray-700 mb-3">
-                        Preferred Colors
-                      </label>
-                      <div className="grid grid-cols-3 gap-3">
-                        {colors.map(color => (
-                          <label key={color} className="flex items-center space-x-2 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              name="swapPreferences.colors"
-                              value={color}
-                              checked={formData.swapPreferences.colors.includes(color)}
-                              onChange={handleInputChange}
-                              className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-                            />
-                            <span className="text-base text-gray-700">{color.charAt(0).toUpperCase() + color.slice(1)}</span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <label className="block text-base font-semibold text-gray-700 mb-3">
-                        Additional Notes
-                      </label>
+                      <label className="block text-[1.05rem] font-bold text-gray-800 mb-3">Additional Swap Notes</label>
                       <textarea
                         name="swapPreferences.notes"
                         value={formData.swapPreferences.notes}
                         onChange={handleInputChange}
                         rows={3}
-                        className="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all resize-none text-base"
-                        placeholder="Any specific preferences or requirements for the swap..."
+                        className="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all bg-gray-50 focus:bg-white resize-none text-lg"
+                        placeholder="Any specific brands or styles you absolutely want (or don't want)?"
                       />
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* Donation Info Section - Only show for donate */}
+              {/* Donation Info Conditional */}
               {formData.type === 'donate' && (
-                <div className="bg-white rounded-xl shadow-lg p-8 border border-gray-100">
-                  <div className="flex items-center mb-8">
-                    <div className="bg-pink-100 p-4 rounded-xl mr-4">
-                      <Heart className="h-7 w-7 text-pink-600" />
-                    </div>
-                    <div>
-                      <h2 className="text-2xl font-bold text-gray-900">Donation Information</h2>
-                      <p className="text-base text-gray-600">How would you like to donate this item?</p>
+                <div className="bg-white rounded-[1.5rem] shadow-sm border border-pink-100 overflow-hidden">
+                  <div className="border-b border-pink-100 p-8 sm:p-10 bg-pink-50/50">
+                    <div className="flex items-center">
+                      <div className="bg-white p-3 rounded-xl shadow-sm mr-5 border border-pink-100 text-pink-600">
+                        <Heart className="h-6 w-6 fill-current" />
+                      </div>
+                      <div>
+                        <h2 className="text-2xl font-bold text-gray-900">Donation Details</h2>
+                        <p className="text-gray-500 mt-1 font-medium">Direct your goodwill effectively.</p>
+                      </div>
                     </div>
                   </div>
                   
-                  <div className="space-y-8">
+                  <div className="p-8 sm:p-10 space-y-8">
                     <div>
-                      <label className="block text-base font-semibold text-gray-700 mb-3">
-                        Preferred NGO
-                      </label>
-                      <div className="relative">
-                        <select
-                          name="donationInfo.preferredNGO"
-                          value={formData.donationInfo.preferredNGO}
-                          onChange={handleInputChange}
-                          className="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all appearance-none bg-white text-base"
-                        >
-                          <option value="">Select NGO (Optional)</option>
-                          {ngos.map(ngo => (
-                            <option key={ngo} value={ngo}>{ngo}</option>
-                          ))}
-                        </select>
-                        <div className="absolute right-5 top-4 pointer-events-none">
-                          <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                          </svg>
-                        </div>
-                      </div>
+                      <label className="block text-[1.05rem] font-bold text-gray-800 mb-3">Preferred NGO Target</label>
+                      <select
+                        name="donationInfo.preferredNGO"
+                        value={formData.donationInfo.preferredNGO}
+                        onChange={handleInputChange}
+                        className="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all bg-gray-50 focus:bg-white text-lg font-medium text-gray-700"
+                      >
+                        <option value="">Any verified NGO partner</option>
+                        {ngos.map(n => <option key={n} value={n}>{n}</option>)}
+                      </select>
                     </div>
-                    
-                    <div>
-                      <label className="flex items-center space-x-3 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          name="donationInfo.pickupAvailable"
-                          checked={formData.donationInfo.pickupAvailable}
-                          onChange={handleInputChange}
-                          className="h-5 w-5 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-                        />
-                        <span className="text-base font-semibold text-gray-700">Pickup Available</span>
+
+                    <div className="flex items-center space-x-4 bg-gray-50 p-6 rounded-xl border border-gray-200">
+                      <input
+                        type="checkbox"
+                        id="pickupAvailable"
+                        name="donationInfo.pickupAvailable"
+                        checked={formData.donationInfo.pickupAvailable}
+                        onChange={handleInputChange}
+                        className="h-6 w-6 text-pink-600 focus:ring-pink-500 border-gray-300 rounded cursor-pointer"
+                      />
+                      <label htmlFor="pickupAvailable" className="text-lg font-bold text-gray-800 cursor-pointer select-none">
+                        I need a volunteer to pick this up
                       </label>
-                      <p className="text-sm text-gray-500 mt-2 ml-8">Check if you can offer pickup service for this donation</p>
                     </div>
                     
                     {formData.donationInfo.pickupAvailable && (
-                      <div>
-                        <label className="block text-base font-semibold text-gray-700 mb-3">
-                          Pickup Address
-                        </label>
+                      <div className="animate-in fade-in slide-in-from-top-4">
+                        <label className="block text-[1.05rem] font-bold text-gray-800 mb-3">Pickup Address <span className="text-red-500">*</span></label>
                         <textarea
                           name="donationInfo.pickupAddress"
                           value={formData.donationInfo.pickupAddress}
                           onChange={handleInputChange}
                           rows={3}
-                          className="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all resize-none text-base"
-                          placeholder="Enter your pickup address..."
+                          className="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all bg-gray-50 focus:bg-white resize-none text-lg"
+                          placeholder="Your full address including pincode..."
                         />
                       </div>
                     )}
                   </div>
                 </div>
               )}
+            </form>
+          </div>
 
-              {/* Submit Button */}
-              <div className="flex justify-between items-center pt-6">
-                <Link
-                  to="/dashboard"
-                  className="px-8 py-4 border-2 border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors font-semibold text-base"
-                >
-                  Cancel
-                </Link>
+          {/* Right Column - Images and Actions */}
+          <div className="space-y-10">
+            {/* Images Section */}
+            <div className="bg-white rounded-[1.5rem] shadow-sm border border-gray-100 overflow-hidden sticky top-8">
+              <div className="border-b border-gray-100 p-8 bg-gray-50/50">
+                <div className="flex items-center">
+                  <div className="bg-white p-3 rounded-xl shadow-sm mr-4 border border-gray-100 text-indigo-600">
+                    <Camera className="h-6 w-6" />
+                  </div>
+                  <h2 className="text-xl font-bold text-gray-900">Photos <span className="text-red-500">*</span></h2>
+                </div>
+              </div>
+              
+              <div className="p-8">
+                {previewImages.length === 0 && (
+                  <label className="border-2 border-dashed border-gray-300 rounded-2xl p-8 hover:border-indigo-500 hover:bg-indigo-50 transition-all flex flex-col items-center justify-center h-56 cursor-pointer group bg-gray-50">
+                    <div className="w-16 h-16 bg-white rounded-full shadow-sm flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                      <Upload className="h-8 w-8 text-indigo-400 group-hover:text-indigo-600" />
+                    </div>
+                    <span className="text-lg text-gray-800 font-bold">Upload Photos</span>
+                    <span className="text-sm text-gray-500 mt-2 font-medium text-center">JPG, PNG allowed.<br/>High quality images sell faster.</span>
+                    <input type="file" multiple accept="image/*" onChange={handleImageUpload} className="hidden" />
+                  </label>
+                )}
+                
+                {previewImages.length > 0 && (
+                  <div className="grid grid-cols-2 gap-4">
+                    {previewImages.map((img, idx) => (
+                      <div key={img.id} className={`relative group rounded-xl overflow-hidden border-2 flex items-center justify-center bg-gray-100 ${idx === 0 ? 'col-span-2 h-64 border-indigo-200' : 'h-32 border-gray-200'}`}>
+                        <img src={img.preview} alt="Preview" className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <button onClick={() => removeImage(img.id)} className="bg-white text-red-600 p-2 rounded-full hover:scale-110 transition-transform shadow-lg">
+                            <X className="h-5 w-5" />
+                          </button>
+                        </div>
+                        {idx === 0 && <div className="absolute top-3 left-3 bg-indigo-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm">Cover</div>}
+                      </div>
+                    ))}
+                    <label className="border-2 border-dashed border-gray-300 rounded-xl hover:border-indigo-500 hover:bg-indigo-50 transition-all flex flex-col items-center justify-center h-32 cursor-pointer bg-gray-50">
+                      <Plus className="h-8 w-8 text-gray-400 mb-2" />
+                      <span className="text-sm font-bold text-gray-600">Add More</span>
+                      <input type="file" multiple accept="image/*" onChange={handleImageUpload} className="hidden" />
+                    </label>
+                  </div>
+                )}
+                {errors.images && (
+                  <p className="text-red-500 text-sm mt-4 font-semibold flex items-center">
+                    <AlertCircle className="h-4 w-4 mr-2" />
+                    {errors.images}
+                  </p>
+                )}
+              </div>
+
+              {/* Submit CTA */}
+              <div className="p-8 border-t border-gray-100 bg-gray-50/50">
                 <button
                   type="submit"
+                  form="listing-form"
                   disabled={isSubmitting}
-                  className="px-10 py-4 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center shadow-lg font-semibold text-base"
+                  className="w-full bg-[#1e1b4b] text-white py-5 px-6 rounded-xl hover:bg-indigo-900 transition-colors disabled:opacity-50 flex items-center justify-center font-bold text-[1.15rem] shadow-lg shadow-indigo-900/20"
                 >
                   {isSubmitting ? (
                     <>
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
-                      Listing...
+                      Processing...
                     </>
                   ) : (
                     <>
-                      <Package className="h-5 w-5 mr-3" />
-                      List Item
+                      Publish Listing
                     </>
                   )}
                 </button>
-              </div>
-            </form>
-          </div>
-
-          {/* Right Column - Images and Preview */}
-          <div className="space-y-8">
-            {/* Images Section */}
-            <div className="bg-white rounded-xl shadow-lg p-8 border border-gray-100">
-              <div className="flex items-center mb-8">
-                <div className="bg-purple-100 p-4 rounded-xl mr-4">
-                  <Camera className="h-7 w-7 text-purple-600" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">Item Images</h2>
-                  <p className="text-base text-gray-600">Add photos of your item</p>
+                <div className="mt-4 text-center">
+                  <p className="text-xs text-gray-500 font-medium">By publishing, you agree to our Terms of Service.</p>
                 </div>
               </div>
-              
-              <div className="grid grid-cols-2 gap-6">
-                {previewImages.map((image) => (
-                  <div key={image.id} className="relative group">
-                    <img
-                      src={image.preview}
-                      alt="Preview"
-                      className="w-full h-40 object-cover rounded-xl border-2 border-gray-200"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeImage(image.id)}
-                      className="absolute top-3 right-3 bg-red-500 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
-                ))}
-                
-                <label className="border-2 border-dashed border-gray-300 rounded-xl p-6 cursor-pointer hover:border-green-500 transition-colors flex flex-col items-center justify-center h-40 bg-gray-50">
-                  <Upload className="h-10 w-10 text-gray-400 mb-3" />
-                  <span className="text-base text-gray-600 font-medium">Add Photo</span>
-                  <span className="text-xs text-gray-500 mt-1">JPG, PNG up to 10MB</span>
-                  <input
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                  />
-                </label>
-              </div>
-              {errors.images && (
-                <p className="text-red-500 text-sm mt-3 flex items-center">
-                  <AlertCircle className="h-4 w-4 mr-1" />
-                  {errors.images}
-                </p>
-              )}
             </div>
-
-            {/* Tips Section */}
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-8 border border-blue-200">
-              <h3 className="text-xl font-bold text-blue-900 mb-6 flex items-center">
-                <span className="text-2xl mr-3">💡</span>
-                Listing Tips
-              </h3>
-              <ul className="space-y-4 text-base text-blue-800">
-                <li className="flex items-start">
-                  <span className="text-green-500 mr-2 mt-1">✓</span>
-                  <span>Take clear photos in good lighting</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-green-500 mr-2 mt-1">✓</span>
-                  <span>Show multiple angles of the item</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-green-500 mr-2 mt-1">✓</span>
-                  <span>Include details about brand and condition</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-green-500 mr-2 mt-1">✓</span>
-                  <span>Be honest about any flaws or wear</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-green-500 mr-2 mt-1">✓</span>
-                  <span>Set competitive pricing for faster sales</span>
-                </li>
-              </ul>
-            </div>
+            
           </div>
         </div>
       </div>

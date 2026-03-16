@@ -1,242 +1,94 @@
-const { supabase } = require('../config/supabaseClient');
+const db = require('../database/sqlite');
 
-// Create donation request
-const createDonationRequest = async (req, res) => {
+// Ensure donations table exists
+db.prepare(`
+  CREATE TABLE IF NOT EXISTS donations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ngoName TEXT NOT NULL,
+    donationType TEXT NOT NULL DEFAULT 'clothing',
+    clothesDescription TEXT,
+    phoneNumber TEXT NOT NULL,
+    name TEXT NOT NULL,
+    email TEXT NOT NULL,
+    message TEXT,
+    status TEXT NOT NULL DEFAULT 'pending',
+    createdAt TEXT DEFAULT (datetime('now'))
+  )
+`).run();
+
+// POST /api/donations
+const createDonation = (req, res) => {
   try {
-    const { item, ngo, donationType, pickupDetails, dropoffDetails, estimatedValue, taxReceipt, notes } = req.body;
-    const userId = req.user.id;
-
-    if (!item || !ngo || !donationType) {
-      return res.status(400).json({
-        success: false,
-        message: 'Item, NGO, and donation type are required.'
-      });
+    const { ngoName, donationType, clothesDescription, phoneNumber, name, email, message } = req.body;
+    if (!ngoName || !phoneNumber || !name || !email) {
+      return res.status(400).json({ success: false, message: 'Name, email, phone, and NGO are required.' });
     }
-
-    // Check if item exists
-    const { data: itemData, error: itemError } = await supabase
-      .from('items')
-      .select('*')
-      .eq('id', item)
-      .single();
-
-    if (itemError || !itemData) {
-      return res.status(404).json({
-        success: false,
-        message: 'Item not found.'
-      });
-    }
-
-    // Create donation request
-    const { data: donationData, error: donationError } = await supabase
-      .from('donations')
-      .insert([{
-        item_id: item,
-        donor_id: userId,
-        ngo_id: ngo,
-        donation_type: donationType,
-        pickup_details: pickupDetails,
-        dropoff_details: dropoffDetails,
-        estimated_value: estimatedValue,
-        tax_receipt: taxReceipt,
-        notes,
-        status: 'pending',
-        created_at: new Date().toISOString()
-      }])
-      .select();
-
-    if (donationError) {
-      console.error('Donation creation error:', donationError);
-      return res.status(500).json({
-        success: false,
-        message: 'Error creating donation request.'
-      });
-    }
-
-    res.status(201).json({
-      success: true,
-      message: 'Donation request created successfully!',
-      donation: donationData[0]
-    });
-
+    const info = db.prepare(`
+      INSERT INTO donations (ngoName, donationType, clothesDescription, phoneNumber, name, email, message, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')
+    `).run(
+      ngoName,
+      donationType || 'clothing',
+      clothesDescription || '',
+      phoneNumber,
+      name,
+      email,
+      message || ''
+    );
+    res.status(201).json({ success: true, message: 'Donation request submitted successfully.', data: { id: info.lastInsertRowid } });
   } catch (error) {
     console.error('Create donation error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error.'
-    });
+    res.status(500).json({ success: false, message: 'Server error submitting donation.' });
   }
 };
 
-// Get user donations
-const getUserDonations = async (req, res) => {
+// GET /api/admin/donations
+const getAllDonations = (req, res) => {
   try {
-    const userId = req.user.id;
-
-    const { data: donations, error } = await supabase
-      .from('donations')
-      .select(`
-        *,
-        items(title, category, price, images),
-        donor:users(username, first_name, last_name),
-        ngo:users(username, first_name, last_name)
-      `)
-      .eq('donor_id', userId)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Get donations error:', error);
-      return res.status(500).json({
-        success: false,
-        message: 'Error fetching donations.'
-      });
+    const { status } = req.query;
+    let query = 'SELECT * FROM donations';
+    const params = [];
+    if (status && status !== 'all') {
+      query += ' WHERE status = ?';
+      params.push(status);
     }
-
-    res.status(200).json({
-      success: true,
-      donations: donations || []
-    });
-
+    query += ' ORDER BY createdAt DESC';
+    const donations = db.prepare(query).all(...params);
+    res.status(200).json({ success: true, data: { donations } });
   } catch (error) {
-    console.error('Get user donations error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error.'
-    });
+    console.error('Get donations error:', error);
+    res.status(500).json({ success: false, message: 'Server error fetching donations.' });
   }
 };
 
-// Get NGO donations
-const getNGODonations = async (req, res) => {
-  try {
-    const ngoId = req.user.id;
-
-    const { data: donations, error } = await supabase
-      .from('donations')
-      .select(`
-        *,
-        items(title, category, price, images),
-        donor:users(username, first_name, last_name)
-      `)
-      .eq('ngo_id', ngoId)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Get NGO donations error:', error);
-      return res.status(500).json({
-        success: false,
-        message: 'Error fetching donations.'
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      donations: donations || []
-    });
-
-  } catch (error) {
-    console.error('Get NGO donations error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error.'
-    });
-  }
-};
-
-// Update donation status
-const updateDonationStatus = async (req, res) => {
+// PATCH /api/admin/donations/:id
+const updateDonationStatus = (req, res) => {
   try {
     const { id } = req.params;
-    const { status, notes } = req.body;
-    const userId = req.user.id;
-
-    const { data: donationData, error: checkError } = await supabase
-      .from('donations')
-      .select('*')
-      .eq('id', id)
-      .single();
-
-    if (checkError || !donationData) {
-      return res.status(404).json({
-        success: false,
-        message: 'Donation not found.'
-      });
+    const { status } = req.body;
+    const valid = ['pending', 'approved', 'collected', 'rejected'];
+    if (!valid.includes(status)) {
+      return res.status(400).json({ success: false, message: 'Invalid status value.' });
     }
-
-    // Check if user owns this donation or is the NGO
-    if (donationData.ngo_id !== userId) {
-      return res.status(403).json({
-        success: false,
-        message: 'Access denied.'
-      });
-    }
-
-    const { data: updatedData, error: updateError } = await supabase
-      .from('donations')
-      .update({
-        status,
-        notes,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', id)
-      .select();
-
-    if (updateError) {
-      console.error('Update donation error:', updateError);
-      return res.status(500).json({
-        success: false,
-        message: 'Error updating donation.'
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      message: 'Donation updated successfully!',
-      donation: updatedData[0]
-    });
-
+    const existing = db.prepare('SELECT id FROM donations WHERE id = ?').get(id);
+    if (!existing) return res.status(404).json({ success: false, message: 'Donation not found.' });
+    db.prepare('UPDATE donations SET status = ? WHERE id = ?').run(status, id);
+    res.status(200).json({ success: true, message: 'Donation status updated.' });
   } catch (error) {
     console.error('Update donation error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error.'
-    });
+    res.status(500).json({ success: false, message: 'Server error updating status.' });
   }
 };
 
-module.exports = {
-  createDonationRequest,
-  getUserDonations,
-  getNGODonations,
-  updateDonationStatus,
-  getDonationById: async (req, res) => {
-    res.status(200).json({
-      success: true,
-      message: 'Get donation by ID - Coming soon with Supabase!'
-    });
-  },
-  respondToDonation: async (req, res) => {
-    res.status(200).json({
-      success: true,
-      message: 'Respond to donation - Coming soon with Supabase!'
-    });
-  },
-  scheduleDonation: async (req, res) => {
-    res.status(200).json({
-      success: true,
-      message: 'Schedule donation - Coming soon with Supabase!'
-    });
-  },
-  completeDonation: async (req, res) => {
-    res.status(200).json({
-      success: true,
-      message: 'Complete donation - Coming soon with Supabase!'
-    });
-  },
-  reviewDonation: async (req, res) => {
-    res.status(200).json({
-      success: true,
-      message: 'Review donation - Coming soon with Supabase!'
-    });
+// DELETE /api/admin/donations/:id
+const deleteDonation = (req, res) => {
+  try {
+    const { id } = req.params;
+    db.prepare('DELETE FROM donations WHERE id = ?').run(id);
+    res.status(200).json({ success: true, message: 'Donation deleted.' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error deleting donation.' });
   }
 };
+
+module.exports = { createDonation, getAllDonations, updateDonationStatus, deleteDonation };

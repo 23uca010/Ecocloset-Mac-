@@ -1,23 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { 
-  Search, 
-  Filter, 
-  Heart, 
   ShoppingBag, 
-  Star,
-  Users,
-  Package,
   Recycle,
   Gift,
-  ChevronRight,
   ArrowRight,
-  Shield,
-  Truck,
-  Clock,
-  MapPin,
-  ShoppingCart
+  Search,
+  Plus,
+  Heart,
+  ShoppingCart,
+  Leaf
 } from 'lucide-react';
 
 const HomePage = () => {
@@ -26,154 +19,123 @@ const HomePage = () => {
   const featuredData = [
     {
       id: 1,
-      title: 'Vintage Denim Jacket',
-      price: 3750,
-      image: '/images/denim-jacket.jpg',
+      title: 'Cozy Wool Sweater',
+      price: 4575,
+      image: 'https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=500&q=80',
       category: 'Outerwear',
-      condition: 'Like-new',
-      size: 'M',
+      condition: 'New',
+      size: 'L',
       type: 'swap',
-      rating: 4.5,
-      reviews: 23,
-      seller: 'Sarah M.',
-      sellerAvatar: '/images/seller-sarah.jpg',
-      location: 'New York, NY',
-      listed: '2 days ago',
-      description: 'Classic vintage denim jacket in excellent condition.'
+      seller: 'Olivia T.',
     },
     {
       id: 2,
-      title: 'White Leather Sneakers',
-      price: 5400,
-      image: '/images/white-sneakers.jpg',
-      category: 'Shoes',
-      condition: 'Like-new',
-      size: 'M',
-      type: 'sell',
-      rating: 4.8,
-      reviews: 15,
-      seller: 'Alex K.',
-      sellerAvatar: '/images/seller-alex.jpg',
-      location: 'Los Angeles, CA',
-      listed: '1 day ago',
-      description: 'Clean white leather sneakers in like-new condition.'
-    },
-    {
-      id: 3,
-      title: 'Floral Summer Dress',
-      price: 2900,
-      image: '/images/floral-dress.jpg',
-      category: 'Dresses',
-      condition: 'Good',
-      size: 'S',
-      type: 'swap',
-      rating: 4.2,
-      reviews: 8,
-      seller: 'Emma L.',
-      sellerAvatar: '/images/seller-emma.jpg',
-      location: 'Austin, TX',
-      listed: '3 hours ago',
-      description: 'Beautiful floral dress perfect for summer occasions.'
-    },
-    {
-      id: 4,
       title: 'Brown Leather Boots',
       price: 6600,
-      image: '/images/brown-boots.jpg',
+      image: 'https://images.unsplash.com/photo-1608256246200-53e635b5b65f?w=500&q=80',
       category: 'Shoes',
       condition: 'Good',
       size: 'L',
       type: 'sell',
-      rating: 4.9,
-      reviews: 31,
       seller: 'Michael R.',
-      sellerAvatar: '/images/seller-michael.jpg',
-      location: 'Portland, OR',
-      listed: '5 days ago',
-      description: 'Durable brown leather boots for all weather.'
+    },
+    {
+      id: 3,
+      title: 'Black Cotton T-Shirt',
+      price: 1250,
+      image: 'https://images.unsplash.com/photo-1581655353564-df123a1eb820?w=500&q=80',
+      category: 'Tops',
+      condition: 'Good',
+      size: 'M',
+      type: 'swap_only',
+      seller: 'Sarah M.',
+    },
+    {
+      id: 4,
+      title: 'Floral Summer Dress',
+      price: 2900,
+      image: 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=500&q=80',
+      category: 'Dresses',
+      condition: 'Good',
+      size: 'S',
+      type: 'swap',
+      seller: 'Emma L.',
     }
   ];
 
-  const handleAddToCart = (item) => {
-    const cartItem = {
-      _id: item.id,
-      title: item.title,
-      price: item.price,
-      image: item.image,
-      category: item.category,
-      size: item.size || 'M',
-      condition: item.condition,
-      seller: item.seller
-    };
-    addToCart(cartItem);
-  };
-
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#f8f9fa] font-sans pb-20 relative">
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-green-600 to-blue-600 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              Reduce Waste Reimagine fashion
-            </h1>
-            <p className="text-xl mb-8 text-green-100">
-              Buy, sell, and swap pre-loved fashion. Sustainable style made simple.
-            </p>
-            <div className="max-w-2xl mx-auto">
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Link
-                  to="/browse"
-                  className="flex-1 bg-white text-green-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors flex items-center justify-center"
-                >
-                  Start Shopping
-                </Link>
-                <Link
-                  to="/sell-swap"
-                  className="flex-1 border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-green-600 transition-colors flex items-center justify-center"
-                >
-                  List Your Items
-                </Link>
-              </div>
-            </div>
+      <section className="bg-[#108c4b] text-white py-32 px-4 relative overflow-hidden">
+        {/* Background Patterns (Simulated) */}
+        <div className="absolute top-10 left-10 opacity-20 transform -rotate-12">
+           <Leaf className="w-48 h-48" />
+        </div>
+        <div className="absolute bottom-10 right-10 opacity-20 transform rotate-12">
+           <Recycle className="w-48 h-48" />
+        </div>
+
+        <div className="max-w-[1400px] mx-auto text-center relative z-10 flex flex-col items-center">
+          <h1 className="text-5xl md:text-[5rem] font-extrabold mb-8 tracking-tight leading-tight max-w-4xl">
+            Reduce Waste <br/> Reimagine fashion
+          </h1>
+          <p className="text-xl md:text-2xl text-green-50 mb-12 font-light max-w-2xl">
+            Buy, sell, and swap pre-loved fashion. Sustainable style made simple.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-6">
+            <Link
+              to="/browse"
+              className="bg-white text-gray-900 px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-50 flex items-center justify-center transition-all shadow-sm"
+            >
+              Start Shopping <ArrowRight className="ml-2 h-5 w-5" />
+            </Link>
+            <Link
+              to="/sell-swap"
+              className="border-2 border-white/80 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-white/10 flex items-center justify-center transition-all bg-transparent"
+            >
+              List Your Items
+            </Link>
           </div>
         </div>
       </section>
 
       {/* How It Works Section */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-12 text-center">
+      <section className="py-24">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-4xl font-extrabold text-gray-900 mb-16 text-center">
             How It Works
           </h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <ShoppingBag className="h-8 w-8 text-green-600" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+             {/* Card 1 */}
+            <div className="bg-white rounded-[2rem] p-12 border border-gray-100 shadow-sm text-center transform hover:-translate-y-1 transition-transform duration-300">
+              <div className="w-20 h-20 mx-auto bg-[#e6f6eb] rounded-full flex items-center justify-center mb-8">
+                <ShoppingBag className="h-10 w-10 text-[#108c4b]" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">Browse & Buy</h3>
-              <p className="text-gray-600">
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">Browse & Buy</h3>
+              <p className="text-gray-600 leading-relaxed text-[1.1rem]">
                 Discover unique pre-loved fashion from our community. Filter by size, style, and condition.
               </p>
             </div>
             
-            <div className="text-center">
-              <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Recycle className="h-8 w-8 text-blue-600" />
+            {/* Card 2 */}
+            <div className="bg-white rounded-[2rem] p-12 border border-gray-100 shadow-sm text-center transform hover:-translate-y-1 transition-transform duration-300">
+              <div className="w-20 h-20 mx-auto bg-[#fff4e5] rounded-full flex items-center justify-center mb-8">
+                <Recycle className="h-10 w-10 text-[#d97c23]" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">Swap Items</h3>
-              <p className="text-gray-600">
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">Swap Items</h3>
+              <p className="text-gray-600 leading-relaxed text-[1.1rem]">
                 Trade your clothes with others. Find the perfect match and refresh your wardrobe for free.
               </p>
             </div>
             
-            <div className="text-center">
-              <div className="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Gift className="h-8 w-8 text-purple-600" />
+             {/* Card 3 */}
+            <div className="bg-white rounded-[2rem] p-12 border border-gray-100 shadow-sm text-center transform hover:-translate-y-1 transition-transform duration-300">
+              <div className="w-20 h-20 mx-auto bg-[#e5f8f5] rounded-full flex items-center justify-center mb-8">
+                <Gift className="h-10 w-10 text-[#0f8c85]" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">Sell & Earn</h3>
-              <p className="text-gray-600">
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">Sell & Earn</h3>
+              <p className="text-gray-600 leading-relaxed text-[1.1rem]">
                 List items you no longer wear. Set your price and connect with buyers instantly.
               </p>
             </div>
@@ -182,73 +144,71 @@ const HomePage = () => {
       </section>
 
       {/* Featured Items Section */}
-      <section className="py-12 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
+      <section className="py-20 bg-white border-t border-gray-100">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-4xl font-extrabold text-gray-900 mb-12 text-center">
             Featured Items
           </h2>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {featuredData.map((item) => (
-              <div key={item.id} className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow overflow-hidden group">
-                <div className="relative">
-                  <img
-                    src={item.image}
-                    alt={item.title}
-                    className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-200"
-                  />
-                  <div className="absolute top-2 right-2 flex items-center space-x-2">
-                    <button className="bg-white p-2 rounded-full shadow-md hover:bg-gray-100 transition-colors">
-                      <Heart className="h-4 w-4 text-gray-600 hover:text-red-500 transition-colors" />
-                    </button>
-                    <span className={`px-2 py-1 text-xs rounded-full ${
-                      item.type === 'sell' ? 'bg-green-600 text-white' :
-                      'bg-blue-600 text-white'
-                    }`}>
-                      {item.type === 'sell' ? 'For Sale' : 'Sale or Swap'}
-                    </span>
-                  </div>
-                </div>
-                
-                <div className="p-4">
-                  <h3 className="font-semibold text-gray-900 mb-2 truncate">{item.title}</h3>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-lg font-bold text-green-600">₹{item.price}</span>
-                    <span className="text-sm text-gray-600">{item.condition} • Size {item.size}</span>
-                  </div>
-                  
-                  <div className="flex items-center mb-3">
-                    <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                    <span className="text-sm text-gray-600 ml-1">{item.rating}</span>
-                    <span className="text-sm text-gray-400 ml-1">({item.reviews})</span>
-                  </div>
-                  
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center">
-                      <img
-                        src={item.sellerAvatar}
-                        alt={item.seller}
-                        className="w-6 h-6 rounded-full mr-2"
-                      />
-                      <span className="text-sm text-gray-600">by {item.seller}</span>
+              <Link to={`/items/${item.id}`} key={item.id} className="block group">
+                <div className="bg-white border border-gray-100 rounded-[1.5rem] overflow-hidden hover:shadow-xl transition-all duration-300">
+                  <div className="relative h-64 overflow-hidden bg-gray-100">
+                    <img
+                      src={item.image}
+                      alt={item.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute top-4 right-4 focus:outline-none">
+                      <span className={`px-4 py-2 text-sm font-bold rounded-lg shadow-sm backdrop-blur-md ${
+                        item.type === 'sell' ? 'bg-white/90 text-gray-900' :
+                        item.type === 'swap_only' ? 'bg-indigo-600/90 text-white' :
+                        'bg-green-600/90 text-white'
+                      }`}>
+                        {item.type === 'sell' ? 'For Sale' : item.type === 'swap_only' ? 'Swap Only' : 'Sale or Swap'}
+                      </span>
                     </div>
                   </div>
                   
-                  {item.type === 'sell' && (
-                    <button
-                      onClick={() => handleAddToCart(item)}
-                      className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors font-medium flex items-center justify-center"
-                    >
-                      <ShoppingCart className="h-4 w-4 mr-2" />
-                      Add to Cart
-                    </button>
-                  )}
+                  <div className="p-6">
+                    <h3 className="font-bold text-xl text-gray-900 mb-2 truncate group-hover:text-green-700 transition-colors">{item.title}</h3>
+                    <div className="mb-4 text-sm">
+                      <span className="text-[#3b82f6] font-medium">{item.condition}</span>
+                      <span className="text-gray-400 mx-2">•</span>
+                      <span className="text-gray-500">Size {item.size}</span>
+                    </div>
+                    
+                    <div className="flex items-end justify-between mt-6">
+                      <span className="text-[1.75rem] font-bold text-[#108c4b]">₹{item.price.toLocaleString('en-IN')}</span>
+                      <span className="text-sm font-medium text-gray-400 mb-1">by {item.seller}</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
       </section>
+
+      {/* Floating Quick Actions Menu */}
+      <div className="fixed bottom-8 right-8 z-50">
+         <div className="bg-white p-3 rounded-2xl shadow-2xl border border-gray-100 flex flex-col gap-2 w-48">
+            <Link to="/browse" className="flex items-center gap-3 w-full py-3 px-4 bg-green-50 text-green-700 rounded-xl hover:bg-green-100 transition-colors font-semibold shadow-sm">
+               <Search className="h-5 w-5" /> Browse Items
+            </Link>
+            <Link to="/sell-swap" className="flex items-center gap-3 w-full py-3 px-4 bg-blue-50 text-blue-700 rounded-xl hover:bg-blue-100 transition-colors font-semibold shadow-sm">
+               <Plus className="h-5 w-5" /> Add Listing
+            </Link>
+            <Link to="/donate" className="flex items-center gap-3 w-full py-3 px-4 bg-red-50 text-red-700 rounded-xl hover:bg-red-100 transition-colors font-semibold shadow-sm">
+               <Heart className="h-5 w-5" /> Donate
+            </Link>
+            <Link to="/cart" className="flex items-center gap-3 w-full py-3 px-4 bg-orange-50 text-orange-700 rounded-xl hover:bg-orange-100 transition-colors font-semibold shadow-sm">
+               <ShoppingCart className="h-5 w-5" /> My Cart
+            </Link>
+         </div>
+      </div>
+
     </div>
   );
 };

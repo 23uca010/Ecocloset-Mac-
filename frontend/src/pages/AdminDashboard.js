@@ -7,6 +7,7 @@ import ListingManagement from '../components/admin/ListingManagement';
 import SwapMonitoring from '../components/admin/SwapMonitoring';
 import Moderation from '../components/admin/Moderation';
 import CategoryManagement from '../components/admin/CategoryManagement';
+import DonationsManagement from '../components/admin/DonationsManagement';
 
 const AdminDashboard = () => {
   const { api } = useAuth();
@@ -163,6 +164,8 @@ const AdminDashboard = () => {
             onDeleteCategory={handleDeleteCategory} 
           />
         );
+      case 'donations':
+        return <DonationsManagement />;
       default:
         return (
           <div className="flex flex-col items-center justify-center py-20 text-center">

@@ -134,10 +134,36 @@ const deleteItem = (req, res) => {
   }
 };
 
+// Get user items
+const getUserItems = (req, res) => {
+  try {
+    const { userId } = req.params;
+    const items = db.prepare(`
+      SELECT i.*, u.name as owner_name 
+      FROM items i
+      LEFT JOIN users u ON i.user_id = u.id
+      WHERE i.user_id = ?
+      ORDER BY i.created_at DESC
+    `).all(userId);
+
+    res.status(200).json({
+      success: true,
+      data: items
+    });
+  } catch (error) {
+    console.error('Get user items error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error fetching user items.'
+    });
+  }
+};
+
 module.exports = {
   getItems,
   createItem,
   getItem,
   deleteItem,
-  getItemById: getItem
+  getItemById: getItem,
+  getUserItems
 };

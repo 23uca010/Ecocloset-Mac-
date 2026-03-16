@@ -4,20 +4,19 @@ import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import ModernNavbar from './components/ModernNavbar';
 import Cart from './components/Cart';
-import HomePage from './pages/HomePage';
-import ItemsPage from './pages/ItemsPage';
+import Footer from './components/Footer';
+import ModernHome from './pages/ModernHome';
+import StylishItems from './pages/StylishItems';
 import AddListing from './pages/AddListing';
 import ProfilePage from './pages/ProfilePage';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import ModernHome from './pages/ModernHome';
 import InnovativeDashboard from './pages/InnovativeDashboard';
-import StylishItems from './pages/StylishItems';
-import ModernDonate from './pages/ModernDonate';
+import Donate from './pages/Donate';
 import ItemDetail from './pages/ItemDetail';
-import Swaps from './pages/Swaps';
-import Donations from './pages/Donations';
 import SellSwap from './pages/SellSwap';
+import SellPage from './pages/SellPage';
+import SwapPage from './pages/SwapPage';
 import AdminDashboard from './pages/AdminDashboard';
 import NGODashboard from './pages/NGODashboard';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -35,21 +34,72 @@ function App() {
           {!isAuthPage && <ModernNavbar />}
           <main className="flex-1">
             <Routes>
-              {/* New Design Routes */}
-              <Route path="/" element={<Navigate to="/login" replace />} />
-              <Route path="/home" element={
+              {/* Auth Routes */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+
+              {/* Root → Home */}
+              <Route path="/" element={
                 <ProtectedRoute>
-                  <HomePage />
+                  <ModernHome />
                 </ProtectedRoute>
               } />
+              <Route path="/home" element={
+                <ProtectedRoute>
+                  <ModernHome />
+                </ProtectedRoute>
+              } />
+
+              {/* Browse */}
               <Route path="/browse" element={
                 <ProtectedRoute>
                   <StylishItems />
                 </ProtectedRoute>
               } />
+              <Route path="/items" element={
+                <ProtectedRoute>
+                  <StylishItems />
+                </ProtectedRoute>
+              } />
+              <Route path="/items/:id" element={
+                <ProtectedRoute>
+                  <ItemDetail />
+                </ProtectedRoute>
+              } />
+
+              {/* Listing Routes */}
               <Route path="/add-listing" element={
                 <ProtectedRoute>
                   <AddListing />
+                </ProtectedRoute>
+              } />
+              <Route path="/sell" element={
+                <ProtectedRoute>
+                  <SellPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/swap" element={
+                <ProtectedRoute>
+                  <SwapPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/sell-swap" element={
+                <ProtectedRoute>
+                  <SellSwap />
+                </ProtectedRoute>
+              } />
+
+              {/* Donate */}
+              <Route path="/donate" element={
+                <ProtectedRoute>
+                  <Donate />
+                </ProtectedRoute>
+              } />
+
+              {/* Dashboard */}
+              <Route path="/dashboard" element={
+                <ProtectedRoute>
+                  <InnovativeDashboard />
                 </ProtectedRoute>
               } />
               <Route path="/profile" element={
@@ -62,60 +112,16 @@ function App() {
                   <ProfilePage />
                 </ProtectedRoute>
               } />
-              
-              {/* Original Routes */}
-              <Route path="/modern-home" element={
-                <ProtectedRoute>
-                  <ModernHome />
-                </ProtectedRoute>
-              } />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/items" element={
-                <ProtectedRoute>
-                  <StylishItems />
-                </ProtectedRoute>
-              } />
-              <Route path="/items/:id" element={
-                <ProtectedRoute>
-                  <ItemDetail />
-                </ProtectedRoute>
-              } />
-              <Route path="/donate" element={
-                <ProtectedRoute>
-                  <ModernDonate />
-                </ProtectedRoute>
-              } />
-              <Route path="/add-item" element={
-                <ProtectedRoute>
-                  <ModernDonate />
-                </ProtectedRoute>
-              } />
-              <Route path="/sell-swap" element={
-                <ProtectedRoute>
-                  <SellSwap />
-                </ProtectedRoute>
-              } />
-              
-              {/* Protected Routes */}
-              <Route path="/dashboard" element={
-                <ProtectedRoute>
-                  <InnovativeDashboard />
-                </ProtectedRoute>
-              } />
-              <Route path="/swaps" element={
-                <ProtectedRoute>
-                  <Swaps />
-                </ProtectedRoute>
-              } />
-              <Route path="/donations" element={
-                <ProtectedRoute>
-                  <Donations />
-                </ProtectedRoute>
-              } />
               <Route path="/messages" element={
                 <ProtectedRoute>
                   <Messages />
+                </ProtectedRoute>
+              } />
+
+              {/* Admin */}
+              <Route path="/admin" element={
+                <ProtectedRoute>
+                  <AdminDashboard />
                 </ProtectedRoute>
               } />
               <Route path="/admin/dashboard" element={
@@ -128,12 +134,13 @@ function App() {
                   <NGODashboard />
                 </ProtectedRoute>
               } />
-              
+
               {/* Catch all */}
               <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>
           </main>
           <Cart />
+          {!isAuthPage && <Footer />}
         </div>
       </CartProvider>
     </AuthProvider>

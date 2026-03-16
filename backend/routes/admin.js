@@ -11,6 +11,7 @@ const {
   getAdminSwaps,
   getSystemReports
 } = require('../controllers/adminController');
+const { getAllDonations, updateDonationStatus, deleteDonation } = require('../controllers/donationController');
 
 // All these routes should be protected by isAdmin middleware in server.js
 // but here we just define the sub-routes
@@ -24,5 +25,10 @@ router.put('/items/:id/status', updateItemStatus);
 router.delete('/items/:id', deleteItem);
 router.get('/swaps', getAdminSwaps);
 router.get('/reports', getSystemReports);
+
+// Donations management
+router.get('/donations', getAllDonations);
+router.patch('/donations/:id', updateDonationStatus);
+router.delete('/donations/:id', deleteDonation);
 
 module.exports = router;

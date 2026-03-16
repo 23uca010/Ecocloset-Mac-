@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { 
   BarChart3, Users, ShoppingBag, Repeat, 
   AlertTriangle, Tags, Settings, LogOut, 
-  Menu, X, Shield, Bell, Search
+  Menu, X, Shield, Bell, Search, Heart
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -19,6 +19,7 @@ const AdminLayout = ({ children, activeTab, setActiveTab }) => {
     { id: 'swaps', label: 'Swaps', icon: <Repeat size={20} /> },
     { id: 'reports', label: 'Reports', icon: <AlertTriangle size={20} /> },
     { id: 'categories', label: 'Categories', icon: <Tags size={20} /> },
+    { id: 'donations', label: 'Donations', icon: <Heart size={20} /> },
   ];
 
   const handleLogout = async () => {
