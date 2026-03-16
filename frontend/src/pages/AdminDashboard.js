@@ -14,7 +14,6 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState({
     stats: null,
-    users: [],
     items: [],
     swaps: [],
     reports: [],
@@ -31,11 +30,10 @@ const AdminDashboard = () => {
     try {
       setLoading(true);
       const [
-        statsRes, usersRes, itemsRes, 
+        statsRes, itemsRes, 
         swapsRes, reportsRes, categoriesRes
       ] = await Promise.all([
         api.get('/admin/dashboard/stats'),
-        api.get('/admin/users'),
         api.get('/admin/items'),
         api.get('/admin/swaps'),
         api.get('/admin/reports'),
@@ -44,7 +42,6 @@ const AdminDashboard = () => {
 
       setData({
         stats: statsRes.data.data.overview,
-        users: usersRes.data.data.users || [],
         items: itemsRes.data.data.items || [],
         swaps: swapsRes.data.data.swaps || [],
         reports: reportsRes.data.data.reports || [],
@@ -59,25 +56,7 @@ const AdminDashboard = () => {
     }
   };
 
-  // User Actions
-  const handleUpdateUserStatus = async (userId, status) => {
-    try {
-      await api.put(`/admin/users/${userId}/status`, { status });
-      fetchAllData(); // Refresh data
-    } catch (error) {
-      alert('Failed to update user status');
-    }
-  };
 
-  const handleDeleteUser = async (userId) => {
-    if (!window.confirm('Delete this user permanently?')) return;
-    try {
-      await api.delete(`/admin/users/${userId}`);
-      fetchAllData();
-    } catch (error) {
-      alert('Failed to delete user');
-    }
-  };
 
   // Item Actions
   const handleUpdateItemStatus = async (itemId, status) => {
@@ -150,13 +129,7 @@ const AdminDashboard = () => {
       case 'overview':
         return <AdminOverview stats={data.stats} recentUsers={data.recentUsers} recentItems={data.recentItems} />;
       case 'users':
-        return (
-          <UserManagement 
-            users={data.users} 
-            onUpdateStatus={handleUpdateUserStatus} 
-            onDeleteUser={handleDeleteUser} 
-          />
-        );
+        return <UserManagement />;
       case 'listings':
         return (
           <ListingManagement 

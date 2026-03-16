@@ -109,6 +109,18 @@ db.exec(`
         FOREIGN KEY(user_id) REFERENCES users(id),
         FOREIGN KEY(definition_id) REFERENCES definitions(id)
     );
+    CREATE TABLE IF NOT EXISTS messages(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        sender_id INTEGER,
+        receiver_id INTEGER,
+        item_id INTEGER,
+        content TEXT,
+        is_read BOOLEAN DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(sender_id) REFERENCES users(id),
+        FOREIGN KEY(receiver_id) REFERENCES users(id),
+        FOREIGN KEY(item_id) REFERENCES items(id)
+    );
 `);
 
 // Migration: Ensure users table has gamification columns
@@ -204,6 +216,23 @@ const isAdmin = (req, res, next) => {
         res.status(500).json({ success: false, error: err.message });
     }
 }
+
+// General Auth Middleware
+const isAuth = (req, res, next) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return res.status(401).json({ success: false, message: "No token provided" });
+    }
+
+    const token = authHeader.split(" ")[1];
+    if (!token.startsWith("mock-jwt-token-")) {
+        return res.status(401).json({ success: false, message: "Invalid token" });
+    }
+
+    const userId = token.split("-")[3];
+    req.userId = userId;
+    next();
+};
 
 // Auth APIs (Kept inline for simplicity as they are core, but can be modularized later)
 app.post("/api/auth/login", (req, res) => {
@@ -312,6 +341,7 @@ app.use("/api/dashboard", require("./routes/dashboard"));
 app.use("/api/admin", isAdmin, require("./routes/admin"));
 app.use("/api/items", require("./routes/items"));
 app.use("/api/categories", require("./routes/categories"));
+app.use("/api/messages", isAuth, require("./routes/messages"));
 console.log("Modular routes registered.");
 
 const PORT = 5000;

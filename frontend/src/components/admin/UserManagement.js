@@ -1,13 +1,56 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Search, Filter, Trash2, ShieldAlert, 
   UserX, CheckCircle2, MoreVertical, 
   ExternalLink, Mail, Calendar, MapPin
 } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
-const UserManagement = ({ users, onUpdateStatus, onDeleteUser }) => {
+const UserManagement = () => {
+  const { api } = useAuth();
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
+
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await api.get('/admin/users');
+      setUsers(res.data.data.users || []);
+    } catch (err) {
+      console.error('Error fetching users:', err);
+      setError('Failed to fetch users.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleUpdateStatus = async (userId, status) => {
+    try {
+      await api.put(`/admin/users/${userId}/status`, { status });
+      fetchUsers();
+    } catch (error) {
+      alert('Failed to update user status');
+    }
+  };
+
+  const handleDeleteUser = async (userId) => {
+    if (!window.confirm('Delete this user permanently?')) return;
+    try {
+      await api.delete(`/admin/users/${userId}`);
+      fetchUsers();
+    } catch (error) {
+      alert('Failed to delete user');
+    }
+  };
 
   const filteredUsers = users.filter(user => {
     const matchesSearch = 
@@ -29,6 +72,30 @@ const UserManagement = ({ users, onUpdateStatus, onDeleteUser }) => {
         return <span className="bg-gray-50 text-gray-600 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">{status}</span>;
     }
   };
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden p-20 text-center animate-in slide-in-from-bottom duration-500">
+        <div className="h-12 w-12 border-4 border-indigo-50 border-t-indigo-500 rounded-full animate-spin mx-auto mb-4"></div>
+        <p className="text-gray-500 font-medium tracking-wide">Loading platform enthusiasts...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden p-20 text-center animate-in slide-in-from-bottom duration-500">
+        <div className="h-12 w-12 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-4">
+          <ShieldAlert size={24} />
+        </div>
+        <h4 className="text-lg font-bold text-gray-900 mb-2">Connection Error</h4>
+        <p className="text-gray-500 mb-6">{error}</p>
+        <button onClick={fetchUsers} className="px-6 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-bold rounded-xl transition-colors">
+          Try Again
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden animate-in slide-in-from-bottom duration-500">
@@ -123,7 +190,7 @@ const UserManagement = ({ users, onUpdateStatus, onDeleteUser }) => {
                   <div className="flex justify-end items-center gap-2">
                     {user.status === 'active' ? (
                        <button 
-                        onClick={() => onUpdateStatus(user.id, 'suspended')}
+                        onClick={() => handleUpdateStatus(user.id, 'suspended')}
                         className="p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all"
                         title="Suspend User"
                       >
@@ -131,7 +198,7 @@ const UserManagement = ({ users, onUpdateStatus, onDeleteUser }) => {
                       </button>
                     ) : (
                       <button 
-                        onClick={() => onUpdateStatus(user.id, 'active')}
+                        onClick={() => handleUpdateStatus(user.id, 'active')}
                         className="p-2 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
                         title="Reactivate User"
                       >
@@ -140,7 +207,7 @@ const UserManagement = ({ users, onUpdateStatus, onDeleteUser }) => {
                     )}
                     
                     <button 
-                      onClick={() => onUpdateStatus(user.id, 'banned')}
+                      onClick={() => handleUpdateStatus(user.id, 'banned')}
                       className="p-2 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
                       title="Ban User"
                     >
@@ -150,7 +217,7 @@ const UserManagement = ({ users, onUpdateStatus, onDeleteUser }) => {
                     <div className="h-6 w-px bg-gray-100 mx-1"></div>
                     
                     <button 
-                      onClick={() => onDeleteUser(user.id)}
+                      onClick={() => handleDeleteUser(user.id)}
                       className="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all"
                       title="Delete Permanently"
                     >

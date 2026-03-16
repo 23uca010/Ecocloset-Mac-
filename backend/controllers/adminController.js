@@ -3,15 +3,15 @@ const db = require('../database/sqlite');
 // Get dashboard statistics
 const getDashboardStats = (req, res) => {
   try {
-    const totalUsers = db.prepare('SELECT COUNT(*) as count FROM users WHERE role = "user"').get().count;
+    const totalUsers = db.prepare("SELECT COUNT(*) as count FROM users WHERE role = 'user'").get().count;
     const totalItems = db.prepare('SELECT COUNT(*) as count FROM items').get().count;
-    const activeListings = db.prepare('SELECT COUNT(*) as count FROM items WHERE status = "active"').get().count;
-    const pendingListings = db.prepare('SELECT COUNT(*) as count FROM items WHERE status = "pending"').get().count;
+    const activeListings = db.prepare("SELECT COUNT(*) as count FROM items WHERE status = 'active'").get().count;
+    const pendingListings = db.prepare("SELECT COUNT(*) as count FROM items WHERE status = 'pending'").get().count;
     const totalSwaps = db.prepare('SELECT COUNT(*) as count FROM swaps').get().count;
-    const reportedItems = db.prepare('SELECT COUNT(*) as count FROM reports WHERE target_type = "item" AND status = "pending"').get().count;
+    const reportedItems = db.prepare("SELECT COUNT(*) as count FROM reports WHERE target_type = 'item' AND status = 'pending'").get().count;
 
     // Get recent activity
-    const recentUsers = db.prepare('SELECT id, name, email, role, created_at, status FROM users WHERE role = "user" ORDER BY created_at DESC LIMIT 5').all();
+    const recentUsers = db.prepare("SELECT id, name, email, role, created_at, status FROM users WHERE role = 'user' ORDER BY created_at DESC LIMIT 5").all();
     const recentItems = db.prepare('SELECT id, title, category, status, created_at FROM items ORDER BY created_at DESC LIMIT 5').all();
 
     res.status(200).json({
@@ -43,7 +43,7 @@ const getDashboardStats = (req, res) => {
 const getUsers = (req, res) => {
   try {
     const { search } = req.query;
-    let query = 'SELECT id, name, email, role, location, phone, status, created_at FROM users WHERE role = "user"';
+    let query = "SELECT id, name, email, role, location, phone, status, created_at FROM users WHERE role = 'user'";
     let params = [];
 
     if (search) {

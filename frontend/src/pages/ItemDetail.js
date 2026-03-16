@@ -229,8 +229,15 @@ const ItemDetail = () => {
                   <span className="font-medium">Add to Cart</span>
                 </button>
                 
-                {isAuthenticated && user && item.owner._id !== user._id && item.status === 'available' && (
+                {isAuthenticated && user && item.user_id !== user.id && item.status === 'available' && (
                   <div className="space-y-3">
+                    <Link
+                      to={`/messages?user_id=${item.user_id}&item_id=${item.id}`}
+                      className="w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition-colors flex items-center justify-center space-x-2"
+                    >
+                      <MessageCircle className="h-5 w-5" />
+                      <span className="font-medium">Message Seller</span>
+                    </Link>
                     {item.type !== 'donation' && (
                       <button
                         onClick={initiateSwap}

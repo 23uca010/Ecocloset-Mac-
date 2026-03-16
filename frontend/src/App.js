@@ -3,7 +3,6 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import ModernNavbar from './components/ModernNavbar';
-import Footer from './components/Footer';
 import Cart from './components/Cart';
 import HomePage from './pages/HomePage';
 import ItemsPage from './pages/ItemsPage';
@@ -23,6 +22,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import NGODashboard from './pages/NGODashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import UserProfile from './components/UserProfile';
+import Messages from './pages/Messages';
 
 function App() {
   const location = useLocation();
@@ -113,6 +113,11 @@ function App() {
                   <Donations />
                 </ProtectedRoute>
               } />
+              <Route path="/messages" element={
+                <ProtectedRoute>
+                  <Messages />
+                </ProtectedRoute>
+              } />
               <Route path="/admin/dashboard" element={
                 <ProtectedRoute>
                   <AdminDashboard />
@@ -128,7 +133,6 @@ function App() {
               <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>
           </main>
-          {!isAuthPage && <Footer />}
           <Cart />
         </div>
       </CartProvider>

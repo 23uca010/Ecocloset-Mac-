@@ -20,7 +20,8 @@ import {
   Sparkles,
   Eye,
   ArrowRight,
-  Trash2
+  Trash2,
+  X
 } from 'lucide-react';
 import { formatCurrency } from '../utils/formatters';
 
@@ -40,6 +41,7 @@ const StylishItems = () => {
   const [selectedType, setSelectedType] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
   const [hoveredItem, setHoveredItem] = useState(null);
+  const [quickViewItem, setQuickViewItem] = useState(null);
   
   const categories = ['Tops', 'Bottoms', 'Dresses', 'Outerwear', 'Shoes', 'Accessories', 'Bags', 'Jewelry'];
   const conditions = ['New', 'Like New', 'Good', 'Fair'];
@@ -369,7 +371,13 @@ const StylishItems = () => {
                           {/* Quick View */}
                           {hoveredItem === item._id && (
                             <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                              <button className="px-6 py-3 bg-white text-purple-600 rounded-full font-medium hover:bg-purple-50 transition-colors flex items-center">
+                              <button 
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  setQuickViewItem(item);
+                                }}
+                                className="px-6 py-3 bg-white text-purple-600 rounded-full font-medium hover:bg-purple-50 transition-colors flex items-center"
+                              >
                                 <Eye className="h-4 w-4 mr-2" />
                                 Quick View
                               </button>
@@ -497,7 +505,12 @@ const StylishItems = () => {
                 {viewMode === 'grid' && (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {filteredItems.map((item) => (
-                      <div key={item._id} className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden group">
+                      <div 
+                        key={item._id} 
+                        className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden group"
+                        onMouseEnter={() => setHoveredItem(item._id)}
+                        onMouseLeave={() => setHoveredItem(null)}
+                      >
                         <div className="relative">
                           <Link to={`/items/${item._id}`}>
                             <div className="aspect-square overflow-hidden">
@@ -508,6 +521,22 @@ const StylishItems = () => {
                               />
                             </div>
                           </Link>
+
+                          {/* Quick View */}
+                          {hoveredItem === item._id && (
+                            <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                              <button 
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  setQuickViewItem(item);
+                                }}
+                                className="px-6 py-3 bg-white text-purple-600 rounded-full font-medium hover:bg-purple-50 transition-colors flex items-center"
+                              >
+                                <Eye className="h-4 w-4 mr-2" />
+                                Quick View
+                              </button>
+                            </div>
+                          )}
                           
                           {/* Type Badge */}
                           <div className="absolute top-4 right-4">
@@ -613,6 +642,100 @@ const StylishItems = () => {
           </div>
         </div>
       </div>
+
+      {/* Quick View Modal */}
+      {quickViewItem && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto flex flex-col md:flex-row relative">
+            {/* Image Section */}
+            <div className="md:w-1/2 bg-gray-100 flex items-center justify-center relative">
+              <img 
+                src={quickViewItem.image} 
+                alt={quickViewItem.title} 
+                className="w-full h-full object-cover max-h-[50vh] md:max-h-full"
+              />
+              <button 
+                onClick={() => setQuickViewItem(null)}
+                className="absolute top-4 left-4 p-2 bg-white rounded-full text-gray-800 hover:bg-gray-100 md:hidden"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            
+            {/* Details Section */}
+            <div className="md:w-1/2 p-8 relative flex flex-col">
+              <button 
+                onClick={() => setQuickViewItem(null)}
+                className="absolute top-6 right-6 p-2 text-gray-400 hover:text-gray-800 hidden md:block"
+              >
+                <X className="h-6 w-6" />
+              </button>
+              
+              <div className="mb-2 mt-4 md:mt-0">
+                <span className="text-xs font-bold text-purple-600 bg-purple-50 px-3 py-1.5 rounded-full uppercase tracking-wider">
+                  {quickViewItem.category}
+                </span>
+              </div>
+              
+              <h2 className="text-3xl font-bold text-gray-900 mb-2 mt-4">{quickViewItem.title}</h2>
+              <div className="flex items-center space-x-4 mb-6">
+                <span className="text-3xl font-black text-gray-900">{formatCurrency(quickViewItem.price)}</span>
+                <span className="text-sm font-medium text-gray-500 bg-gray-100 px-3 py-1 rounded-md">{quickViewItem.condition}</span>
+                {quickViewItem.size && <span className="text-sm font-medium text-gray-500 bg-gray-100 px-3 py-1 rounded-md">Size: {quickViewItem.size}</span>}
+              </div>
+              
+              <p className="text-gray-600 mb-8 border-b border-gray-100 pb-8 leading-relaxed">
+                {quickViewItem.description || "No description provided for this item."}
+              </p>
+              
+              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                <Users className="w-5 h-5 mr-2 text-purple-600" />
+                Seller Details
+              </h3>
+              
+              <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 mb-8 flex items-center space-x-5 border border-purple-100">
+                {quickViewItem.owner.profileImage ? (
+                  <img src={quickViewItem.owner.profileImage} alt={quickViewItem.owner.firstName} className="w-16 h-16 rounded-full border-4 border-white shadow-sm object-cover" />
+                ) : (
+                  <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center border-4 border-purple-100 shadow-sm shrink-0">
+                    <Users className="h-7 w-7 text-purple-500" />
+                  </div>
+                )}
+                <div>
+                  <h4 className="text-xl font-bold text-gray-900 mb-1">{quickViewItem.owner.firstName || 'User'}</h4>
+                  <div className="flex flex-col space-y-2 mt-2 text-gray-600">
+                    {quickViewItem.location && (
+                      <span className="flex items-center text-sm"><MapPin className="h-4 w-4 mr-2 text-purple-400" /> {quickViewItem.location}</span>
+                    )}
+                    {quickViewItem.phone && (
+                      <span className="flex items-center text-sm"><Users className="h-4 w-4 mr-2 text-purple-400" /> {quickViewItem.phone}</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex space-x-4 mt-auto">
+                <button 
+                  onClick={() => {
+                    handleAddToCart(quickViewItem);
+                    setQuickViewItem(null);
+                  }}
+                  className="flex-1 py-4 bg-purple-600 text-white font-bold rounded-xl hover:bg-purple-700 transition-colors shadow-lg shadow-purple-200 flex items-center justify-center"
+                >
+                  <ShoppingBag className="w-5 h-5 mr-2" />
+                  Add to Cart
+                </button>
+                <Link 
+                  to={`/items/${quickViewItem._id}`} 
+                  className="flex-1 py-4 bg-white text-purple-600 border-2 border-purple-600 font-bold rounded-xl hover:bg-purple-50 transition-colors text-center flex items-center justify-center"
+                >
+                  View Full Page
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

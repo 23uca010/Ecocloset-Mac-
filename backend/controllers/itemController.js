@@ -42,10 +42,11 @@ const getItems = (req, res) => {
 // Create new item
 const createItem = (req, res) => {
   try {
-    const { user_id, title, brand, price, description, category, size, color, condition, listingType, image } = req.body;
+    const { user_id, title, brand, price, description, category, size, color, condition, listingType } = req.body;
+    const image = req.file ? req.file.path.replace(/\\/g, '/') : null;
     
-    // Status defaults to 'pending' for new listings in admin review workflow
-    const status = 'pending';
+    // Make listings active immediately so they show up in Browse
+    const status = 'active';
 
     const info = db.prepare(`
       INSERT INTO items (user_id, title, brand, price, description, category, size, color, condition, listingType, image, status)
@@ -54,11 +55,13 @@ const createItem = (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: 'Item listed successfully and is pending approval.',
+      message: 'Item listed successfully.',
       data: { id: info.lastInsertRowid }
     });
   } catch (error) {
-    console.error('Create item error:', error);
+    console.error('CREATE ITEM EXCEPTION:', error);
+    console.log('REQUEST BODY WAS:', req.body);
+    console.log('REQUEST FILE WAS:', req.file);
     res.status(500).json({
       success: false,
       message: 'Server error creating listing.'
@@ -101,14 +104,18 @@ const getItem = (req, res) => {
 const deleteItem = (req, res) => {
   try {
     const { id } = req.params;
-    const { user_id } = req.body;
+    const { user_id, requester_id, requester_role } = req.body;
+    
+    // Support either field name
+    const requestingUser = user_id || requester_id;
 
     const item = db.prepare('SELECT user_id FROM items WHERE id = ?').get(id);
     if (!item) {
       return res.status(404).json({ success: false, message: 'Item not found' });
     }
 
-    if (item.user_id !== user_id) {
+    // Admins can delete any item, otherwise it must match the item owner
+    if (requester_role !== 'admin' && item.user_id !== parseInt(requestingUser)) {
       return res.status(403).json({ success: false, message: 'Unauthorized' });
     }
 
