@@ -86,12 +86,15 @@ db.exec(`
     );
     CREATE TABLE IF NOT EXISTS donations(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER,
-        ngo_id INTEGER,
-        items_count INTEGER DEFAULT 1,
-        status TEXT DEFAULT 'pending',
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY(user_id) REFERENCES users(id)
+        ngoName TEXT NOT NULL,
+        donationType TEXT NOT NULL DEFAULT 'clothing',
+        clothesDescription TEXT,
+        phoneNumber TEXT NOT NULL,
+        name TEXT NOT NULL,
+        email TEXT NOT NULL,
+        message TEXT,
+        status TEXT NOT NULL DEFAULT 'pending',
+        createdAt TEXT DEFAULT (datetime('now'))
     );
     CREATE TABLE IF NOT EXISTS definitions(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -143,6 +146,32 @@ columnsToAdd.forEach(col => {
         }
     }
 });
+
+// Migration: Fix donations table schema if needed
+try {
+    const tableInfo = db.prepare("PRAGMA table_info(donations)").all();
+    const hasNgoName = tableInfo.some(col => col.name === 'ngoName');
+    if (!hasNgoName) {
+        console.log("Migrating donations table... Dropping old table.");
+        db.exec("DROP TABLE donations");
+        db.exec(`
+            CREATE TABLE donations(
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ngoName TEXT NOT NULL,
+                donationType TEXT NOT NULL DEFAULT 'clothing',
+                clothesDescription TEXT,
+                phoneNumber TEXT NOT NULL,
+                name TEXT NOT NULL,
+                email TEXT NOT NULL,
+                message TEXT,
+                status TEXT NOT NULL DEFAULT 'pending',
+                createdAt TEXT DEFAULT (datetime('now'))
+            )
+        `);
+    }
+} catch (e) {
+    console.error("Error migrating donations table:", e.message);
+}
 
 // Migration: Ensure messages table has messageStatus column
 const messageColumnsToAdd = [

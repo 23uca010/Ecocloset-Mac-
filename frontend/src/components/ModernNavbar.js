@@ -134,14 +134,7 @@ const ModernNavbar = () => {
                       <div className="text-xs text-gray-400">Trade for another</div>
                     </div>
                   </Link>
-                  <div className="h-px bg-gray-100 my-1" />
-                  <Link to="/add-listing" className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50" onClick={() => setIsSellOpen(false)}>
-                    <Plus className="h-4 w-4 text-gray-500" />
-                    <div>
-                      <div className="font-medium">Add Listing</div>
-                      <div className="text-xs text-gray-400">All options</div>
-                    </div>
-                  </Link>
+
                 </div>
               )}
             </div>
@@ -178,7 +171,7 @@ const ModernNavbar = () => {
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
                 className="flex items-center gap-2 pl-2 pr-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
               >
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white text-sm font-bold">
+                <div className="w-8 h-8 rounded-full bg-green-600 flex items-center justify-center text-white text-sm font-bold">
                   {user?.firstName?.charAt(0)?.toUpperCase() || <User className="h-4 w-4" />}
                 </div>
                 <ChevronDown className={`h-3.5 w-3.5 text-gray-500 transition-transform ${isProfileOpen ? 'rotate-180' : ''}`} />
@@ -281,7 +274,7 @@ const ModernNavbar = () => {
             {isAuthenticated ? (
               <div className="border-t border-gray-100 pt-3 mt-3">
                 <div className="flex items-center gap-3 px-3 mb-3">
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white font-bold">
+                  <div className="w-9 h-9 rounded-full bg-green-600 flex items-center justify-center text-white font-bold">
                     {user?.firstName?.charAt(0)?.toUpperCase() || 'U'}
                   </div>
                   <div>

@@ -111,7 +111,7 @@ const StylishItems = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8f9fa] font-sans pb-24 relative">
+    <div className="min-h-screen bg-[#f9fafb] font-sans pb-24 relative">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
         {/* Top Search Bar */}
@@ -122,7 +122,7 @@ const StylishItems = () => {
             placeholder="Search items by title, description, category, or seller..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-gray-100 border-none rounded-2xl pl-12 pr-4 py-4 focus:ring-2 focus:ring-green-500 focus:outline-none text-[1.05rem] text-gray-800"
+            className="w-full bg-white border border-gray-200 rounded-lg pl-12 pr-4 py-3.5 focus:border-green-500 focus:ring-1 focus:ring-green-500 focus:outline-none text-[1.05rem] text-gray-800 shadow-sm"
           />
         </div>
 
@@ -164,7 +164,7 @@ const StylishItems = () => {
                   {categories.map(category => (
                     <label key={category} className="flex items-center cursor-pointer group">
                       <div className={`w-5 h-5 rounded border flex justify-center items-center transition-colors ${
-                          selectedCategories.includes(category) ? 'bg-[#108c4b] border-[#108c4b]' : 'border-gray-300 bg-white group-hover:border-green-500'
+                          selectedCategories.includes(category) ? 'bg-green-600 border-green-600' : 'border-gray-300 bg-white group-hover:border-green-500'
                         }`}>
                         {selectedCategories.includes(category) && <div className="w-2.5 h-2.5 bg-white rounded-sm" />}
                       </div>
@@ -187,7 +187,7 @@ const StylishItems = () => {
                   {listingTypes.map(type => (
                     <label key={type.id} className="flex items-center cursor-pointer group">
                       <div className={`w-5 h-5 rounded border flex justify-center items-center transition-colors ${
-                          selectedTypes.includes(type.id) ? 'bg-[#108c4b] border-[#108c4b]' : 'border-gray-300 bg-white group-hover:border-green-500'
+                          selectedTypes.includes(type.id) ? 'bg-green-600 border-green-600' : 'border-gray-300 bg-white group-hover:border-green-500'
                         }`}>
                         {selectedTypes.includes(type.id) && <div className="w-2.5 h-2.5 bg-white rounded-sm" />}
                       </div>
@@ -211,9 +211,9 @@ const StylishItems = () => {
                     <button
                       key={size}
                       onClick={() => handleSizeChange(size)}
-                      className={`w-12 h-10 rounded-lg text-sm font-medium transition-colors border ${
+                      className={`w-12 h-10 rounded-md text-sm font-medium transition-colors border ${
                         selectedSizes.includes(size)
-                          ? 'bg-[#108c4b] text-white border-[#108c4b]'
+                          ? 'bg-green-600 text-white border-green-600'
                           : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300'
                       }`}
                     >
@@ -230,37 +230,37 @@ const StylishItems = () => {
           <div className="flex-1">
             <p className="text-gray-500 mb-6">{filteredItems.length} items found</p>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
               {filteredItems.map(item => (
                 <Link to={`/items/${item._id}`} key={item._id} className="block group">
-                  <div className="bg-white border border-gray-100 rounded-[1.5rem] overflow-hidden hover:shadow-xl transition-all duration-300">
-                    <div className="relative h-72 overflow-hidden bg-gray-100">
+                  <div className="bg-white border border-gray-200 shadow-sm rounded-lg overflow-hidden hover:shadow transition-all duration-300">
+                    <div className="relative h-64 overflow-hidden bg-gray-50 border-b border-gray-100">
                       <img
                         src={item.image}
                         alt={item.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
-                      <div className="absolute top-4 right-4 focus:outline-none">
-                        <span className={`px-4 py-2 text-sm font-bold rounded-lg shadow-sm ${
-                          item.type === 'sell' ? 'bg-white/95 text-gray-900' :
-                          'bg-[#108c4b] text-white'
+                      <div className="absolute top-3 right-3">
+                        <span className={`px-2.5 py-1 text-xs font-medium rounded-md border ${
+                          item.type === 'sell' ? 'bg-white text-gray-900 border-gray-200 shadow-sm' :
+                          'bg-green-50 text-green-700 border-green-200'
                         }`}>
                           {item.type === 'sell' ? 'For Sale' : item.type === 'swap_only' ? 'Swap Only' : 'Sale or Swap'}
                         </span>
                       </div>
                     </div>
                     
-                    <div className="p-6">
-                      <h3 className="font-bold text-xl text-gray-900 mb-2 truncate group-hover:text-green-700 transition-colors">{item.title}</h3>
-                      <div className="mb-4 text-sm">
-                        <span className="text-[#3b82f6] font-medium">{item.condition}</span>
-                        <span className="text-gray-400 mx-2">•</span>
+                    <div className="p-4">
+                      <h3 className="font-medium text-lg text-gray-900 mb-1 truncate">{item.title}</h3>
+                      <div className="mb-3 text-sm">
+                        <span className="text-blue-600 font-medium">{item.condition}</span>
+                        <span className="text-gray-300 mx-2">•</span>
                         <span className="text-gray-500">Size {item.size}</span>
                       </div>
                       
-                      <div className="flex items-end justify-between mt-6">
-                        <span className="text-[1.75rem] font-bold text-[#108c4b]">₹{item.price.toLocaleString('en-IN')}</span>
-                        <span className="text-sm font-medium text-gray-400 mb-1">by {item.seller}</span>
+                      <div className="flex items-end justify-between mt-4">
+                        <span className="text-xl font-bold text-green-700">₹{item.price.toLocaleString('en-IN')}</span>
+                        <span className="text-sm font-medium text-gray-500">by {item.seller}</span>
                       </div>
                     </div>
                   </div>
@@ -269,9 +269,9 @@ const StylishItems = () => {
             </div>
             
             {filteredItems.length === 0 && (
-               <div className="bg-white rounded-[2rem] p-16 text-center border border-gray-100 mt-4">
-                 <h3 className="text-xl font-bold text-gray-900 mb-2">No matching items</h3>
-                 <p className="text-gray-500">Try adjusting your filters or search query.</p>
+               <div className="bg-white rounded-lg p-16 text-center border border-gray-200 mt-4 shadow-sm">
+                 <h3 className="text-lg font-bold text-gray-900 mb-1">No matching items</h3>
+                 <p className="text-gray-500 text-sm">Try adjusting your filters or search query.</p>
                </div>
             )}
           </div>
@@ -279,19 +279,19 @@ const StylishItems = () => {
       </div>
 
        {/* Floating Quick Actions Menu */}
-      <div className="fixed bottom-8 right-8 z-50">
-         <div className="bg-white p-3 rounded-2xl shadow-2xl border border-gray-100 flex flex-col gap-2 w-48 hidden md:flex">
-            <Link to="/browse" className="flex items-center gap-3 w-full py-3 px-4 bg-green-50 text-green-700 rounded-xl hover:bg-green-100 transition-colors font-semibold shadow-sm">
-               <Search className="h-5 w-5" /> Browse Items
+      <div className="fixed bottom-8 right-8 z-50 hidden md:block">
+         <div className="bg-white p-2 rounded-lg shadow-lg border border-gray-200 flex flex-col gap-1 w-48">
+            <Link to="/browse" className="flex items-center gap-2.5 w-full py-2.5 px-3 text-sm text-gray-700 hover:bg-gray-50 rounded-md font-medium transition-colors">
+               <Search className="h-4 w-4 text-gray-400" /> Browse Items
             </Link>
-            <Link to="/sell-swap" className="flex items-center gap-3 w-full py-3 px-4 bg-blue-50 text-blue-700 rounded-xl hover:bg-blue-100 transition-colors font-semibold shadow-sm">
-               <Plus className="h-5 w-5" /> Add Listing
+            <Link to="/sell-swap" className="flex items-center gap-2.5 w-full py-2.5 px-3 text-sm text-gray-700 hover:bg-gray-50 rounded-md font-medium transition-colors">
+               <Plus className="h-4 w-4 text-gray-400" /> Add Listing
             </Link>
-            <Link to="/donate" className="flex items-center gap-3 w-full py-3 px-4 bg-red-50 text-red-700 rounded-xl hover:bg-red-100 transition-colors font-semibold shadow-sm">
-               <Heart className="h-5 w-5" /> Donate
+            <Link to="/donate" className="flex items-center gap-2.5 w-full py-2.5 px-3 text-sm text-gray-700 hover:bg-gray-50 rounded-md font-medium transition-colors">
+               <Heart className="h-4 w-4 text-gray-400" /> Donate
             </Link>
-            <Link to="/cart" className="flex items-center gap-3 w-full py-3 px-4 bg-orange-50 text-orange-700 rounded-xl hover:bg-orange-100 transition-colors font-semibold shadow-sm border-none text-left">
-               <ShoppingCart className="h-5 w-5" /> My Cart
+            <Link to="/cart" className="flex items-center gap-2.5 w-full py-2.5 px-3 text-sm text-gray-700 hover:bg-gray-50 rounded-md font-medium transition-colors text-left border-t border-gray-100 mt-1 pt-3">
+               <ShoppingCart className="h-4 w-4 text-gray-400" /> My Cart
             </Link>
          </div>
       </div>
