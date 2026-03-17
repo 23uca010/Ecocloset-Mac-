@@ -6,10 +6,6 @@ import {
   Recycle,
   Gift,
   ArrowRight,
-  Search,
-  Plus,
-  Heart,
-  ShoppingCart,
   Leaf
 } from 'lucide-react';
 
@@ -191,23 +187,7 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Floating Quick Actions Menu */}
-      <div className="fixed bottom-8 right-8 z-50">
-         <div className="bg-white p-3 rounded-2xl shadow-2xl border border-gray-100 flex flex-col gap-2 w-48">
-            <Link to="/browse" className="flex items-center gap-3 w-full py-3 px-4 bg-green-50 text-green-700 rounded-xl hover:bg-green-100 transition-colors font-semibold shadow-sm">
-               <Search className="h-5 w-5" /> Browse Items
-            </Link>
-            <Link to="/sell-swap" className="flex items-center gap-3 w-full py-3 px-4 bg-blue-50 text-blue-700 rounded-xl hover:bg-blue-100 transition-colors font-semibold shadow-sm">
-               <Plus className="h-5 w-5" /> Add Listing
-            </Link>
-            <Link to="/donate" className="flex items-center gap-3 w-full py-3 px-4 bg-red-50 text-red-700 rounded-xl hover:bg-red-100 transition-colors font-semibold shadow-sm">
-               <Heart className="h-5 w-5" /> Donate
-            </Link>
-            <Link to="/cart" className="flex items-center gap-3 w-full py-3 px-4 bg-orange-50 text-orange-700 rounded-xl hover:bg-orange-100 transition-colors font-semibold shadow-sm">
-               <ShoppingCart className="h-5 w-5" /> My Cart
-            </Link>
-         </div>
-      </div>
+
 
     </div>
   );

@@ -5,11 +5,7 @@ import { useCart } from '../context/CartContext';
 import { 
   Search, 
   Filter, 
-  ChevronDown,
-  ShoppingBag,
-  Plus,
-  Heart,
-  ShoppingCart
+  ChevronDown
 } from 'lucide-react';
 
 const StylishItems = () => {
@@ -278,23 +274,7 @@ const StylishItems = () => {
         </div>
       </div>
 
-       {/* Floating Quick Actions Menu */}
-      <div className="fixed bottom-8 right-8 z-50 hidden md:block">
-         <div className="bg-white p-2 rounded-lg shadow-lg border border-gray-200 flex flex-col gap-1 w-48">
-            <Link to="/browse" className="flex items-center gap-2.5 w-full py-2.5 px-3 text-sm text-gray-700 hover:bg-gray-50 rounded-md font-medium transition-colors">
-               <Search className="h-4 w-4 text-gray-400" /> Browse Items
-            </Link>
-            <Link to="/sell-swap" className="flex items-center gap-2.5 w-full py-2.5 px-3 text-sm text-gray-700 hover:bg-gray-50 rounded-md font-medium transition-colors">
-               <Plus className="h-4 w-4 text-gray-400" /> Add Listing
-            </Link>
-            <Link to="/donate" className="flex items-center gap-2.5 w-full py-2.5 px-3 text-sm text-gray-700 hover:bg-gray-50 rounded-md font-medium transition-colors">
-               <Heart className="h-4 w-4 text-gray-400" /> Donate
-            </Link>
-            <Link to="/cart" className="flex items-center gap-2.5 w-full py-2.5 px-3 text-sm text-gray-700 hover:bg-gray-50 rounded-md font-medium transition-colors text-left border-t border-gray-100 mt-1 pt-3">
-               <ShoppingCart className="h-4 w-4 text-gray-400" /> My Cart
-            </Link>
-         </div>
-      </div>
+
 
     </div>
   );
