@@ -5,60 +5,30 @@ const getDashboardStats = (req, res) => {
   try {
     const totalUsers = db.prepare("SELECT COUNT(*) as count FROM users WHERE role = 'user'").get().count;
     const totalItems = db.prepare('SELECT COUNT(*) as count FROM items').get().count;
-    const activeListings = db.prepare("SELECT COUNT(*) as count FROM items WHERE status = 'active'").get().count;
-    const pendingListings = db.prepare("SELECT COUNT(*) as count FROM items WHERE status = 'pending'").get().count;
     const totalSwaps = db.prepare('SELECT COUNT(*) as count FROM swaps').get().count;
+    const pendingSwaps = db.prepare("SELECT COUNT(*) as count FROM swaps WHERE status = 'pending'").get().count;
+    const completedSwaps = db.prepare("SELECT COUNT(*) as count FROM swaps WHERE status = 'completed'").get().count;
+    const totalDonations = db.prepare('SELECT COUNT(*) as count FROM donations').get().count;
     
-    // Check if the reports table exists before querying
-    let reportedItems = 0;
-    try {
-       reportedItems = db.prepare("SELECT COUNT(*) as count FROM reports WHERE target_type = 'item' AND status = 'pending'").get().count;
-    } catch(e) { /* Ignore if table doesn't exist yet */ }
-
-    // Calculate approval rate
-    const totalProcessed = activeListings + pendingListings;
-    const approvalRate = totalProcessed > 0 ? ((activeListings / totalProcessed) * 100).toFixed(1) : 0;
-
-    // Platform Growth Data (Mocking past 12 months based on current counts for simplicity, 
-    // but in a real app this would group by created_at)
-    // Here we will do a basic group by month for the current year
+    // Platform Growth Data
     const currentYear = new Date().getFullYear();
-    const monthlyListings = new Array(12).fill(0);
-    const monthlySwaps = new Array(12).fill(0);
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    
+    const usersByMonth = db.prepare(`SELECT strftime('%m', created_at) as month, COUNT(*) as count FROM users WHERE role = 'user' AND strftime('%Y', created_at) = ? GROUP BY month`).all(currentYear.toString());
+    const itemsByMonth = db.prepare(`SELECT strftime('%m', created_at) as month, COUNT(*) as count FROM items WHERE strftime('%Y', created_at) = ? GROUP BY month`).all(currentYear.toString());
+    const completedSwapsByMonth = db.prepare(`SELECT strftime('%m', created_at) as month, COUNT(*) as count FROM swaps WHERE status = 'completed' AND strftime('%Y', created_at) = ? GROUP BY month`).all(currentYear.toString());
+    const donationsByMonth = db.prepare(`SELECT strftime('%m', createdAt) as month, COUNT(*) as count FROM donations WHERE strftime('%Y', createdAt) = ? GROUP BY month`).all(currentYear.toString());
 
-    const itemsByMonth = db.prepare(`
-      SELECT strftime('%m', created_at) as month, COUNT(*) as count 
-      FROM items 
-      WHERE strftime('%Y', created_at) = ? 
-      GROUP BY month
-    `).all(currentYear.toString());
-
-    itemsByMonth.forEach(row => {
-      monthlyListings[parseInt(row.month, 10) - 1] = row.count;
+    const analytics = months.map((m, i) => {
+      const monthNum = (i + 1).toString().padStart(2, '0');
+      return {
+        month: m,
+        users: usersByMonth.find(r => r.month === monthNum)?.count || 0,
+        listings: itemsByMonth.find(r => r.month === monthNum)?.count || 0,
+        swaps: completedSwapsByMonth.find(r => r.month === monthNum)?.count || 0,
+        donations: donationsByMonth.find(r => r.month === monthNum)?.count || 0
+      };
     });
-
-    const swapsByMonth = db.prepare(`
-      SELECT strftime('%m', created_at) as month, COUNT(*) as count 
-      FROM swaps 
-      WHERE strftime('%Y', created_at) = ? 
-      GROUP BY month
-    `).all(currentYear.toString());
-
-    swapsByMonth.forEach(row => {
-      monthlySwaps[parseInt(row.month, 10) - 1] = row.count;
-    });
-
-    // To make the chart look interesting even with low data, calculate normalized height percentages (0-100)
-    // We'll pass raw counts and let frontend decide height, or we can pass a structured array
-    const chartData = monthlyListings.map((count, i) => ({
-      month: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][i],
-      listings: count,
-      swaps: monthlySwaps[i]
-    }));
-
-    // Get recent activity
-    const recentUsers = db.prepare("SELECT id, name, email, role, created_at, status FROM users WHERE role = 'user' ORDER BY created_at DESC LIMIT 5").all();
-    const recentItems = db.prepare('SELECT id, title, category, status, created_at FROM items ORDER BY created_at DESC LIMIT 5').all();
 
     res.status(200).json({
       success: true,
@@ -66,105 +36,52 @@ const getDashboardStats = (req, res) => {
         overview: {
           totalUsers,
           totalListings: totalItems,
-          activeListings,
-          pendingListings,
           totalSwaps,
-          reportedItems,
-          approvalRate,
-          chartData
+          pendingSwaps,
+          completedSwaps,
+          totalDonations
         },
-        recentUsers,
-        recentItems
+        analytics
       }
     });
-
   } catch (error) {
     console.error('Dashboard stats error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error processing statistics.'
-    });
+    res.status(500).json({ success: false, message: 'Server error processing statistics.' });
   }
 };
 
-// Get all users
+// User Management
 const getUsers = (req, res) => {
   try {
-    const { search } = req.query;
-    let query = "SELECT id, name, email, role, location, phone, status, created_at FROM users WHERE role = 'user'";
-    let params = [];
-
-    if (search) {
-      query += ' AND (name LIKE ? OR email LIKE ?)';
-      params.push(`%${search}%`, `%${search}%`);
-    }
-
-    query += ' ORDER BY created_at DESC';
-    
-    // Add listings count for each user
-    const users = db.prepare(query).all(...params);
-    const usersWithCounts = users.map(user => {
-      const listingCount = db.prepare('SELECT COUNT(*) as count FROM items WHERE user_id = ?').get(user.id).count;
-      return { ...user, listingsCount: listingCount };
-    });
-
-    res.status(200).json({
-      success: true,
-      data: { users: usersWithCounts }
-    });
-
+    const users = db.prepare("SELECT id, name, email, role, status, created_at FROM users WHERE role = 'user' ORDER BY created_at DESC").all();
+    res.status(200).json({ success: true, data: { users } });
   } catch (error) {
-    console.error('Get users error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error fetching users.'
-    });
+    res.status(500).json({ success: false, message: 'Error fetching users.' });
   }
 };
 
-// Update user status (suspend/ban)
 const updateUserStatus = (req, res) => {
   try {
     const { id } = req.params;
-    const { status } = req.body; // active, suspended, banned
-
+    const { status } = req.body;
     db.prepare('UPDATE users SET status = ? WHERE id = ?').run(status, id);
-
-    res.status(200).json({
-      success: true,
-      message: `User status updated to ${status}`
-    });
+    res.status(200).json({ success: true, message: `User status updated to ${status}` });
   } catch (error) {
-    console.error('Update user status error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error updating user status.'
-    });
+    res.status(500).json({ success: false, message: 'Error updating user status.' });
   }
 };
 
-// Delete user
 const deleteUser = (req, res) => {
   try {
     const { id } = req.params;
-    
-    // In a real app, we might want to cascade delete or soft delete
     db.prepare('DELETE FROM users WHERE id = ?').run(id);
-
-    res.status(200).json({
-      success: true,
-      message: 'User deleted successfully'
-    });
+    res.status(200).json({ success: true, message: 'User deleted successfully' });
   } catch (error) {
-    console.error('Delete user error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error deleting user.'
-    });
+    res.status(500).json({ success: false, message: 'Error deleting user.' });
   }
 };
 
-// Get all items/listings
+// Item Management
 const getAdminItems = (req, res) => {
   try {
     const items = db.prepare(`
@@ -173,89 +90,76 @@ const getAdminItems = (req, res) => {
       LEFT JOIN users u ON i.user_id = u.id
       ORDER BY i.created_at DESC
     `).all();
-
-    res.status(200).json({
-      success: true,
-      data: { items }
-    });
+    res.status(200).json({ success: true, data: { items } });
   } catch (error) {
-    console.error('Get admin items error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error fetching listings.'
-    });
+    res.status(500).json({ success: false, message: 'Error fetching listings.' });
   }
 };
 
-// Approve/Reject listing
 const updateItemStatus = (req, res) => {
   try {
     const { id } = req.params;
-    const { status } = req.body; // active, rejected, pending
-
+    const { status } = req.body;
     db.prepare('UPDATE items SET status = ? WHERE id = ?').run(status, id);
-
-    res.status(200).json({
-      success: true,
-      message: `Listing status updated to ${status}`
-    });
+    res.status(200).json({ success: true, message: `Listing status updated to ${status}` });
   } catch (error) {
-    console.error('Update item status error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error updating listing.'
-    });
+    res.status(500).json({ success: false, message: 'Error updating listing.' });
   }
 };
 
-// Delete listing
 const deleteItem = (req, res) => {
   try {
     const { id } = req.params;
     db.prepare('DELETE FROM items WHERE id = ?').run(id);
-
-    res.status(200).json({
-      success: true,
-      message: 'Listing deleted successfully'
-    });
+    res.status(200).json({ success: true, message: 'Listing deleted' });
   } catch (error) {
-    console.error('Delete item error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error deleting listing.'
-    });
+    res.status(500).json({ success: false, message: 'Error deleting listing.' });
   }
 };
 
-// Get all swaps
+// Swap Management
 const getAdminSwaps = (req, res) => {
   try {
     const swaps = db.prepare(`
       SELECT s.*, 
              ua.name as user_a_name, ub.name as user_b_name,
-             ia.title as item_a_title, ib.title as item_b_title
+             ia.title as item_a_title, ib.title as item_b_title,
+             ib.image as item_image
       FROM swaps s
       JOIN users ua ON s.user_a_id = ua.id
       JOIN users ub ON s.user_b_id = ub.id
-      JOIN items ia ON s.item_a_id = ia.id
+      LEFT JOIN items ia ON s.item_a_id = ia.id
       JOIN items ib ON s.item_b_id = ib.id
       ORDER BY s.created_at DESC
     `).all();
-
-    res.status(200).json({
-      success: true,
-      data: { swaps }
-    });
+    res.status(200).json({ success: true, data: { swaps } });
   } catch (error) {
-    console.error('Get admin swaps error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error fetching swaps.'
-    });
+    res.status(500).json({ success: false, message: 'Error fetching swaps.' });
   }
 };
 
-// Get all reports
+const updateSwapStatus = (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    db.prepare('UPDATE swaps SET status = ? WHERE id = ?').run(status, id);
+    res.status(200).json({ success: true, message: `Swap status updated to ${status}` });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error updating swap.' });
+  }
+};
+
+const deleteSwapRequest = (req, res) => {
+  try {
+    const { id } = req.params;
+    db.prepare('DELETE FROM swaps WHERE id = ?').run(id);
+    res.status(200).json({ success: true, message: 'Swap request deleted' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error deleting swap.' });
+  }
+};
+
+// Report Management
 const getSystemReports = (req, res) => {
   try {
     const reports = db.prepare(`
@@ -264,17 +168,25 @@ const getSystemReports = (req, res) => {
       JOIN users u ON r.reporter_id = u.id
       ORDER BY r.created_at DESC
     `).all();
-
-    res.status(200).json({
-      success: true,
-      data: { reports }
-    });
+    res.status(200).json({ success: true, data: { reports } });
   } catch (error) {
-    console.error('Get system reports error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error fetching reports.'
-    });
+    res.status(500).json({ success: false, message: 'Error fetching reports.' });
+  }
+};
+
+// Order Management
+const getAdminOrders = (req, res) => {
+  try {
+    const orders = db.prepare(`
+      SELECT o.*, u.name as buyer_name, i.title as item_name
+      FROM orders o
+      JOIN users u ON o.buyer_id = u.id
+      JOIN items i ON o.item_id = i.id
+      ORDER BY o.created_at DESC
+    `).all();
+    res.status(200).json({ success: true, data: { orders } });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error fetching orders.' });
   }
 };
 
@@ -287,5 +199,8 @@ module.exports = {
   updateItemStatus,
   deleteItem,
   getAdminSwaps,
-  getSystemReports
+  updateSwapStatus,
+  deleteSwapRequest,
+  getSystemReports,
+  getAdminOrders
 };

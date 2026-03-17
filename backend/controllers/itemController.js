@@ -51,7 +51,7 @@ const createItem = (req, res) => {
     const info = db.prepare(`
       INSERT INTO items (user_id, title, brand, price, description, category, size, color, condition, listingType, image, status)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(user_id, title, brand, price, description, category, size, color, condition, listingType, image, status);
+    `).run(req.userId || user_id, title, brand, price, description, category, size, color, condition, listingType, image, status);
 
     res.status(201).json({
       success: true,
@@ -138,13 +138,27 @@ const deleteItem = (req, res) => {
 const getUserItems = (req, res) => {
   try {
     const { userId } = req.params;
+    let targetUserId = userId || req.userId;
+    
+    // Ensure ID is treated consistently, converting to number if possible
+    if (targetUserId && !isNaN(targetUserId)) {
+      targetUserId = Number(targetUserId);
+    }
+    
+    console.log('DEBUG: Fetching items for target user ID:', targetUserId, '(Type:', typeof targetUserId, ')');
+
     const items = db.prepare(`
       SELECT i.*, u.name as owner_name 
       FROM items i
       LEFT JOIN users u ON i.user_id = u.id
       WHERE i.user_id = ?
       ORDER BY i.created_at DESC
-    `).all(userId);
+    `).all(targetUserId);
+
+    console.log(`DEBUG: Found ${items.length} items for user ID: ${targetUserId}`);
+    if (items.length > 0) {
+      console.log('DEBUG: First item user_id:', items[0].user_id, '(Type:', typeof items[0].user_id, ')');
+    }
 
     res.status(200).json({
       success: true,

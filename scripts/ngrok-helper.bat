@@ -14,7 +14,7 @@ echo 💡 Press Windows Key + R, type 'cmd', press Enter
 echo.
 echo 🔧 Step 3: Navigate to ngrok folder
 echo 💡 Copy and paste this command:
-echo cd C:\Users\Stergio Eugin\Desktop\ecocloset-project\ngrok
+echo cd %%~dp0..\ngrok
 echo.
 echo 🔧 Step 4: Run ngrok
 echo 💡 Copy and paste this command:

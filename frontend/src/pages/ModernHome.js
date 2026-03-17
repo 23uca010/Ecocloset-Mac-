@@ -7,12 +7,12 @@ import {
 import { useAuth } from '../context/AuthContext';
 
 const CATEGORIES = [
-  { name: 'Tops', emoji: '👕', color: 'bg-gray-100', bg: 'bg-white', text: 'text-gray-900' },
-  { name: 'Bottoms', emoji: '👖', color: 'bg-gray-100', bg: 'bg-white', text: 'text-gray-900' },
-  { name: 'Dresses', emoji: '👗', color: 'bg-gray-100', bg: 'bg-white', text: 'text-gray-900' },
-  { name: 'Outerwear', emoji: '🧥', color: 'bg-gray-100', bg: 'bg-white', text: 'text-gray-900' },
-  { name: 'Shoes', emoji: '👟', color: 'bg-gray-100', bg: 'bg-white', text: 'text-gray-900' },
-  { name: 'Accessories', emoji: '👜', color: 'bg-gray-100', bg: 'bg-white', text: 'text-gray-900' },
+  { name: 'Tops', emoji: '👕', color: 'from-rose-400 to-pink-500', bg: 'bg-rose-50', text: 'text-rose-700' },
+  { name: 'Bottoms', emoji: '👖', color: 'from-blue-400 to-indigo-500', bg: 'bg-blue-50', text: 'text-blue-700' },
+  { name: 'Dresses', emoji: '👗', color: 'from-purple-400 to-violet-500', bg: 'bg-purple-50', text: 'text-purple-700' },
+  { name: 'Outerwear', emoji: '🧥', color: 'from-amber-400 to-orange-500', bg: 'bg-amber-50', text: 'text-amber-700' },
+  { name: 'Shoes', emoji: '👟', color: 'from-teal-400 to-cyan-500', bg: 'bg-teal-50', text: 'text-teal-700' },
+  { name: 'Accessories', emoji: '👜', color: 'from-green-400 to-emerald-500', bg: 'bg-green-50', text: 'text-green-700' },
 ];
 
 const ModernHome = () => {
@@ -71,59 +71,55 @@ const ModernHome = () => {
     <div className="min-h-screen bg-white">
       
       {/* ── Hero Section ── */}
-      <section className="relative bg-white border-b border-gray-100 overflow-hidden">
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <div className="inline-flex items-center gap-2 bg-green-50 border border-green-100 rounded-full px-4 py-2 mb-6">
-                <Leaf className="h-4 w-4 text-green-600" />
-                <span className="text-green-700 text-sm font-medium">Sustainable Fashion Marketplace</span>
+      <section className="relative bg-[#f7f9f7] text-gray-900 overflow-hidden py-24 sm:py-32">
+        <div className="relative max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            
+            {/* Left Content */}
+            <div className="max-w-xl">
+              <div className="inline-flex items-center gap-2 bg-green-100 border border-green-200 rounded-full px-4 py-2 mb-8 shadow-sm">
+                <Leaf className="h-4 w-4 text-[#108c4b]" />
+                <span className="text-[#108c4b] text-sm font-semibold tracking-wide uppercase">Sustainable Fashion Marketplace</span>
               </div>
 
-              <h1 className="text-3xl lg:text-4xl font-bold leading-tight mb-4 text-gray-900">
-                Swap, Sell &{' '}
-                <span className="text-green-600">
-                  Donate
-                </span>
-                <br />
-                Fashion Sustainably
+              <h1 className="text-5xl lg:text-7xl font-extrabold leading-[1.1] tracking-tight mb-8">
+                <span className="block text-gray-900 mb-2">Reduce Waste.</span>
+                <span className="block text-[#108c4b]">Reimagine Fashion.</span>
               </h1>
 
-              <p className="text-base text-gray-600 mb-8 max-w-lg leading-relaxed">
-                Join thousands of eco-conscious fashion lovers. Give your clothes a second life, 
-                discover unique pieces, and make a positive impact on the planet.
-              </p>
+              <div className="space-y-2 mb-10 text-xl text-gray-600 font-medium">
+                <p>Buy, Sell and Swap pre-loved fashion.</p>
+                <p>Sustainable style made simple.</p>
+              </div>
 
-              <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex flex-col sm:flex-row gap-4">
                 <Link to="/browse"
-                  className="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-md font-medium transition-colors">
+                  className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-[#108c4b] hover:bg-[#0d7a40] text-white rounded-xl font-bold transition-all hover:shadow-lg hover:shadow-green-900/10 hover:-translate-y-0.5 text-lg">
                   <ShoppingBag className="h-5 w-5" />
                   Browse Items
                 </Link>
                 <Link to="/add-listing"
-                  className="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 rounded-md font-medium transition-colors">
+                  className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white hover:bg-green-50 text-[#108c4b] border-[2px] border-[#108c4b] rounded-xl font-bold transition-all hover:-translate-y-0.5 text-lg shadow-sm">
                   <Recycle className="h-5 w-5" />
                   List Your Item
                 </Link>
               </div>
-
-
             </div>
 
-            {/* Feature Cards Grid */}
-            <div className="hidden lg:grid grid-cols-2 gap-4">
+            {/* Right Side Cards 2x2 Grid */}
+            <div className="hidden lg:grid grid-cols-2 gap-6 relative">
               {[
-                { label: 'Swap & Exchange', desc: 'Trade clothes you love', icon: Recycle, color: 'bg-blue-50 text-blue-600', border: 'border-gray-200' },
-                { label: 'Sell Pre-Loved', desc: 'Earn from old wardrobe', icon: ShoppingCart, color: 'bg-green-50 text-green-600', border: 'border-gray-200' },
-                { label: 'Donate to NGOs', desc: 'Support good causes', icon: Heart, color: 'bg-rose-50 text-rose-600', border: 'border-gray-200' },
-                { label: 'Go Eco-Friendly', desc: 'Reduce fashion waste', icon: Leaf, color: 'bg-emerald-50 text-emerald-600', border: 'border-gray-200' },
-              ].map((card) => (
-                <div key={card.label} className="bg-white border top-0 border-gray-200 shadow-sm rounded-lg p-5 hover:border-gray-300 transition-colors">
-                  <div className={`inline-flex p-2 rounded-md ${card.color} mb-3`}>
-                    <card.icon className="h-5 w-5" />
+                { label: 'Swap & Exchange', desc: 'Trade clothes you love', icon: Recycle },
+                { label: 'Sell Pre-Loved', desc: 'Earn from old wardrobe', icon: ShoppingCart },
+                { label: 'Donate to NGOs', desc: 'Support good causes', icon: Heart },
+                { label: 'Go Eco-Friendly', desc: 'Reduce fashion waste', icon: Leaf },
+              ].map((card, idx) => (
+                <div key={card.label} className={`bg-white rounded-[1.5rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-gray-100 transition-all duration-300 hover:-translate-y-1 ${idx % 2 === 1 ? 'mt-12' : ''}`}>
+                  <div className="inline-flex p-3 rounded-2xl bg-green-50 mb-6 text-[#108c4b]">
+                    <card.icon className="h-7 w-7" />
                   </div>
-                  <h3 className="text-gray-900 font-medium mb-1 text-base">{card.label}</h3>
-                  <p className="text-gray-500 text-sm">{card.desc}</p>
+                  <h3 className="text-gray-900 font-bold text-xl mb-2">{card.label}</h3>
+                  <p className="text-gray-500 font-medium">{card.desc}</p>
                 </div>
               ))}
             </div>
@@ -132,9 +128,9 @@ const ModernHome = () => {
       </section>
 
       {/* ── Stats Bar ── */}
-      <section className="bg-white border-b border-gray-100 py-8">
+      <section className="bg-[#108c4b] py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-gray-900 text-center">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-white text-center">
             {[
               { label: 'Items Available', value: (stats.totalItems ?? 0).toLocaleString(), icon: Package },
               { label: 'Active Users', value: (stats.totalUsers ?? 0).toLocaleString(), icon: Users },
@@ -142,9 +138,9 @@ const ModernHome = () => {
               { label: 'kg CO₂ Saved', value: (stats.co2Saved ?? 0).toLocaleString(), icon: Leaf },
             ].map((stat) => (
               <div key={stat.label} className="flex flex-col items-center gap-1">
-                <stat.icon className="h-5 w-5 text-green-600 mb-1" />
-                <div className="text-2xl font-bold">{isLoading ? '—' : stat.value}</div>
-                <div className="text-gray-500 text-sm">{stat.label}</div>
+                <stat.icon className="h-6 w-6 text-green-200 mb-1" />
+                <div className="text-3xl font-extrabold">{isLoading ? '—' : stat.value}</div>
+                <div className="text-green-200 text-sm font-medium">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -152,10 +148,10 @@ const ModernHome = () => {
       </section>
 
       {/* ── Category Browsing ── */}
-      <section className="py-16 bg-[#f9fafb]">
+      <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10">
-            <h2 className="text-2xl lg:text-3xl font-bold text-gray-900">Browse by Category</h2>
+            <h2 className="text-3xl font-extrabold text-gray-900">Browse by Category</h2>
             <p className="text-gray-500 mt-2">Find exactly what you're looking for</p>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
@@ -163,9 +159,9 @@ const ModernHome = () => {
               <Link
                 key={cat.name}
                 to={`/browse?category=${cat.name}`}
-                className={`group flex flex-col items-center gap-3 ${cat.bg} rounded-lg p-5 text-center shadow-sm hover:shadow transition-all border border-gray-200`}
+                className={`group flex flex-col items-center gap-3 ${cat.bg} rounded-2xl p-5 text-center hover:shadow-md transition-all hover:-translate-y-1 border border-transparent hover:border-gray-200`}
               >
-                <div className={`w-12 h-12 rounded-full ${cat.color} flex items-center justify-center text-xl`}>
+                <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${cat.color} flex items-center justify-center text-2xl shadow-sm group-hover:scale-110 transition-transform`}>
                   {cat.emoji}
                 </div>
                 <span className={`text-sm font-bold ${cat.text}`}>{cat.name}</span>
@@ -176,23 +172,23 @@ const ModernHome = () => {
       </section>
 
       {/* ── Featured Items ── */}
-      <section className="py-16 bg-white border-b border-gray-100">
+      <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-10">
             <div>
-              <h2 className="text-2xl lg:text-3xl font-bold text-gray-900">Featured Items</h2>
+              <h2 className="text-3xl font-extrabold text-gray-900">Featured Items</h2>
               <p className="text-gray-500 mt-1">Discover the most popular items on EcoCloset</p>
             </div>
-            <Link to="/browse" className="flex items-center gap-1.5 text-green-600 hover:text-green-700 font-medium transition-colors">
+            <Link to="/browse" className="flex items-center gap-1.5 text-[#108c4b] hover:text-[#0d7a40] font-semibold transition-colors">
               View All <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
 
           {featuredItems.length === 0 && !isLoading ? (
-            <div className="text-center py-12 bg-white border border-gray-200 shadow-sm rounded-lg">
+            <div className="text-center py-12 bg-gray-50 rounded-2xl">
               <Package className="h-12 w-12 text-gray-300 mx-auto mb-3" />
               <p className="text-gray-500 font-medium">No items yet. Be the first to list one!</p>
-              <Link to="/add-listing" className="mt-4 inline-flex items-center gap-2 px-6 py-2 bg-green-600 text-white rounded-md text-sm font-medium hover:bg-green-700">
+              <Link to="/add-listing" className="mt-4 inline-flex items-center gap-2 px-5 py-2.5 bg-[#108c4b] text-white rounded-xl text-sm font-semibold hover:bg-[#0d7a40]">
                 <Recycle className="h-4 w-4" /> Add Listing
               </Link>
             </div>
@@ -200,7 +196,7 @@ const ModernHome = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {(isLoading ? Array(8).fill(null) : featuredItems).map((item, idx) => (
                 isLoading ? (
-                  <div key={idx} className="bg-white border border-gray-200 rounded-lg overflow-hidden animate-pulse">
+                  <div key={idx} className="bg-gray-100 rounded-2xl overflow-hidden animate-pulse">
                     <div className="h-56 bg-gray-200" />
                     <div className="p-4 space-y-2">
                       <div className="h-4 bg-gray-200 rounded w-3/4" />
@@ -210,8 +206,8 @@ const ModernHome = () => {
                   </div>
                 ) : (
                   <Link to={`/items/${item.id}`} key={item.id} className="group block">
-                    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-all shadow-sm">
-                      <div className="relative h-56 overflow-hidden bg-gray-50 border-b border-gray-100">
+                    <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                      <div className="relative h-56 overflow-hidden bg-gray-100">
                         <img
                           src={item.image}
                           alt={item.title}
@@ -221,26 +217,26 @@ const ModernHome = () => {
                         <div className="absolute top-3 right-3">
                           <button
                             onClick={(e) => e.preventDefault()}
-                            className="p-1.5 bg-white rounded-full shadow hover:shadow-md transition-all"
+                            className="p-2 bg-white rounded-full shadow-md hover:shadow-lg transition-all hover:scale-110"
                           >
                             <Heart className="h-4 w-4 text-gray-400 hover:text-red-500 transition-colors" />
                           </button>
                         </div>
                         <div className="absolute top-3 left-3">
-                          <span className={`px-2 py-1 text-xs font-medium rounded-md ${
-                            item.listingType === 'sell' ? 'bg-white text-gray-900 border border-gray-200 shadow-sm' :
-                            item.listingType === 'swap' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
-                            'bg-green-50 text-green-700 border border-green-200'
+                          <span className={`px-2.5 py-1 text-xs font-bold rounded-lg ${
+                            item.listingType === 'sell' ? 'bg-white/90 text-gray-900' :
+                            item.listingType === 'swap' ? 'bg-blue-600 text-white' :
+                            'bg-[#108c4b] text-white'
                           }`}>
                             {item.listingType === 'sell' ? 'For Sale' : item.listingType === 'swap' ? 'Swap' : 'Donate'}
                           </span>
                         </div>
                       </div>
                       <div className="p-4">
-                        <h3 className="font-medium text-gray-900 mb-1 truncate">{item.title}</h3>
-                        <p className="text-xs text-gray-500 mb-2">{item.category}{item.size ? ` • Size ${item.size}` : ''}</p>
+                        <h3 className="font-bold text-gray-900 mb-1 truncate">{item.title}</h3>
+                        <p className="text-xs text-gray-500 mb-3">{item.category}{item.size ? ` • Size ${item.size}` : ''}</p>
                         <div className="flex items-center justify-between">
-                          <span className="text-base font-bold text-green-700">
+                          <span className="text-lg font-extrabold text-[#108c4b]">
                             {item.listingType === 'sell' ? `₹${(item.price || 0).toLocaleString('en-IN')}` : 
                              item.listingType === 'swap' ? 'Swap' : 'Free'}
                           </span>
@@ -260,20 +256,20 @@ const ModernHome = () => {
       </section>
 
       {/* ── How It Works ── */}
-      <section className="py-16 bg-[#f9fafb]">
+      <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-2xl lg:text-3xl font-bold text-gray-900">How EcoCloset Works</h2>
+            <h2 className="text-3xl font-extrabold text-gray-900">How EcoCloset Works</h2>
             <p className="text-gray-500 mt-2 max-w-xl mx-auto">Three simple ways to give your clothes a second life</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
-              { title: 'Sell', desc: 'List your pre-loved items at your price. Connect with buyers who appreciate sustainable fashion.', icon: ShoppingCart, iconBg: 'bg-green-50', border: 'border-green-200', iconColor: 'text-green-600', link: '/sell', cta: 'Start Selling' },
-              { title: 'Swap', desc: 'Exchange clothing with other users. Find unique pieces while clearing your closet for free.', icon: Recycle, iconBg: 'bg-blue-50', border: 'border-blue-200', iconColor: 'text-blue-600', link: '/swap', cta: 'Start Swapping' },
-              { title: 'Donate', desc: 'Give clothes to verified NGOs or users in need. Make a real difference in your community.', icon: Gift, iconBg: 'bg-rose-50', border: 'border-rose-200', iconColor: 'text-rose-600', link: '/donate', cta: 'Donate Now' },
+              { title: 'Sell', desc: 'List your pre-loved items at your price. Connect with buyers who appreciate sustainable fashion.', icon: ShoppingCart, iconBg: 'bg-green-100', iconColor: 'text-green-700', link: '/sell', cta: 'Start Selling' },
+              { title: 'Swap', desc: 'Exchange clothing with other users. Find unique pieces while clearing your closet for free.', icon: Recycle, iconBg: 'bg-blue-100', iconColor: 'text-blue-700', link: '/swap', cta: 'Start Swapping' },
+              { title: 'Donate', desc: 'Give clothes to verified NGOs or users in need. Make a real difference in your community.', icon: Gift, iconBg: 'bg-rose-100', iconColor: 'text-rose-700', link: '/donate', cta: 'Donate Now' },
             ].map((item) => (
-              <div key={item.title} className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm hover:shadow transition-all">
-                <div className={`inline-flex p-2 border ${item.border} ${item.iconBg} rounded-md mb-4`}>
+              <div key={item.title} className="bg-white rounded-2xl p-8 border border-gray-100 hover:shadow-lg transition-all hover:-translate-y-1">
+                <div className={`inline-flex p-3 ${item.iconBg} rounded-xl mb-5`}>
                   <item.icon className={`h-7 w-7 ${item.iconColor}`} />
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-3">{item.title}</h3>
@@ -288,19 +284,19 @@ const ModernHome = () => {
       </section>
 
       {/* ── CTA Section ── */}
-      <section className="py-16 bg-white border-t border-gray-100">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center bg-green-50 border border-green-100 rounded-lg p-10">
-          <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-3">
+      <section className="py-16 bg-gradient-to-r from-[#108c4b] to-[#0f7a43]">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl font-extrabold text-white mb-4">
             Ready to Join the Sustainable Fashion Revolution?
           </h2>
-          <p className="text-gray-600 text-base mb-8 max-w-xl mx-auto">
+          <p className="text-green-100 text-lg mb-8 max-w-xl mx-auto">
             Join thousands of users making a positive impact on the environment through conscious fashion choices.
           </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Link to="/browse" className="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-green-600 text-white rounded-md font-medium hover:bg-green-700 transition-colors">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link to="/browse" className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-white text-[#108c4b] rounded-xl font-bold hover:bg-green-50 transition-colors shadow">
               <ShoppingBag className="h-5 w-5" /> Browse Items
             </Link>
-            <Link to="/add-listing" className="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-md font-medium hover:bg-gray-50 transition-colors">
+            <Link to="/add-listing" className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-transparent border-2 border-white text-white rounded-xl font-bold hover:bg-white/10 transition-colors">
               <Recycle className="h-5 w-5" /> List Your First Item
             </Link>
           </div>

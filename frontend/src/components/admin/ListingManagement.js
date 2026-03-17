@@ -115,7 +115,7 @@ const ListingManagement = ({ items, onUpdateStatus, onDeleteItem }) => {
                       <div className="h-16 w-16 min-w-[64px] rounded-2xl bg-gray-50 border border-gray-100 overflow-hidden shadow-sm">
                         {item.image ? (
                           <img 
-                            src={`http://localhost:5000/${item.image}`} 
+                            src={`http://localhost:5001/${item.image}`} 
                             alt={item.title} 
                             className="h-full w-full object-cover"
                           />

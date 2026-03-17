@@ -5,12 +5,12 @@ echo ========================================
 echo.
 
 echo Starting Backend Server...
-cd /d "c:/Users/Stergio Eugin/Desktop/ecocloset-project/backend"
+cd /d "%~dp0..\backend"
 start "Backend Server" cmd /k "npm start && pause"
 
 echo.
 echo Starting Frontend Server...
-cd /d "c:/Users/Stergio Eugin/Desktop/ecocloset-project/frontend"
+cd /d "%~dp0..\frontend"
 start "Frontend Server" cmd /k "npm start && pause"
 
 echo.

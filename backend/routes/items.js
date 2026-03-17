@@ -21,10 +21,13 @@ const storage = multer.diskStorage({
 })
 const upload = multer({ storage: storage })
 
+const { isAuth } = require('../middleware/auth');
+
 router.get('/', getItems);
-router.post('/create', upload.single("image"), createItem);
+router.post('/create', isAuth, upload.single("image"), createItem);
+router.get('/my-items', isAuth, getUserItems);
 router.get('/user/:userId', getUserItems);
 router.get('/:id', getItem);
-router.delete('/:id', deleteItem);
+router.delete('/:id', isAuth, deleteItem);
 
 module.exports = router;

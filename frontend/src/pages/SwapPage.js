@@ -99,7 +99,7 @@ const SwapPage = () => {
       if (previewImages.length > 0 && previewImages[0].file) {
         formDataToSend.append('image', previewImages[0].file);
       }
-      const response = await fetch('http://localhost:5000/api/items/create', {
+      const response = await fetch('http://localhost:5001/api/items/create', {
         method: 'POST',
         body: formDataToSend,
       });

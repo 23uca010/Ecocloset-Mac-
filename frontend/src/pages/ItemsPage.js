@@ -128,7 +128,7 @@ const ItemsPage = () => {
     const fetchItems = async () => {
       try {
         setLoading(true);
-        const response = await fetch('http://localhost:5000/api/items');
+        const response = await fetch('http://localhost:5001/api/items');
         const data = await response.json();
         
         if (data.success) {
@@ -424,7 +424,7 @@ const ItemsPage = () => {
               <div key={item.id} className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group">
                 <div className="relative">
                   <img
-                    src={item.image ? (item.image.startsWith('http') ? item.image : `http://localhost:5000/${item.image}`) : 'https://via.placeholder.com/400x300?text=No+Image'}
+                    src={item.image ? (item.image.startsWith('http') ? item.image : `http://localhost:5001/${item.image}`) : 'https://via.placeholder.com/400x300?text=No+Image'}
                     alt={item.title}
                     className="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-300"
                   />
@@ -524,7 +524,7 @@ const ItemsPage = () => {
                   <div key={item.id} className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow overflow-hidden group">
                     <div className="relative">
                       <img
-                        src={item.image ? (item.image.startsWith('http') ? item.image : `http://localhost:5000/${item.image}`) : 'https://via.placeholder.com/400x300?text=No+Image'}
+                        src={item.image ? (item.image.startsWith('http') ? item.image : `http://localhost:5001/${item.image}`) : 'https://via.placeholder.com/400x300?text=No+Image'}
                         alt={item.title}
                         className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-200"
                       />
@@ -606,7 +606,7 @@ const ItemsPage = () => {
                   <div key={item.id} className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6">
                     <div className="flex items-center space-x-6">
                       <img
-                        src={item.image ? (item.image.startsWith('http') ? item.image : `http://localhost:5000/${item.image}`) : 'https://via.placeholder.com/400x300?text=No+Image'}
+                        src={item.image ? (item.image.startsWith('http') ? item.image : `http://localhost:5001/${item.image}`) : 'https://via.placeholder.com/400x300?text=No+Image'}
                         alt={item.title}
                         className="w-32 h-32 object-cover rounded-lg"
                       />

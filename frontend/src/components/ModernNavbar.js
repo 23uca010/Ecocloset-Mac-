@@ -106,38 +106,15 @@ const ModernNavbar = () => {
               Browse
             </Link>
 
-            {/* Sell/Swap Dropdown */}
-            <div className="relative">
-              <button
-                onClick={() => setIsSellOpen(!isSellOpen)}
-                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  isActive('/sell') || isActive('/swap') || isActive('/add-listing') ? 'text-[#108c4b] bg-green-50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                }`}
-              >
-                <Plus className="h-4 w-4" />
-                Sell/Swap
-                <ChevronDown className={`h-3.5 w-3.5 transition-transform ${isSellOpen ? 'rotate-180' : ''}`} />
-              </button>
-              {isSellOpen && (
-                <div className="absolute top-full left-0 mt-1 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50">
-                  <Link to="/sell" className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50" onClick={() => setIsSellOpen(false)}>
-                    <ShoppingCart className="h-4 w-4 text-green-600" />
-                    <div>
-                      <div className="font-medium">Sell Item</div>
-                      <div className="text-xs text-gray-400">List with a price</div>
-                    </div>
-                  </Link>
-                  <Link to="/swap" className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50" onClick={() => setIsSellOpen(false)}>
-                    <Recycle className="h-4 w-4 text-blue-600" />
-                    <div>
-                      <div className="font-medium">Swap Item</div>
-                      <div className="text-xs text-gray-400">Trade for another</div>
-                    </div>
-                  </Link>
-
-                </div>
-              )}
-            </div>
+            <Link 
+              to="/sell-swap" 
+              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium transition-colors ${
+                isActive('/sell') || isActive('/swap') || isActive('/sell-swap') || isActive('/add-listing') ? 'text-[#108c4b] bg-green-50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+              }`}
+            >
+              <Recycle className="h-4 w-4" />
+              Sell/Swap
+            </Link>
 
             <Link 
               to="/donate" 
@@ -171,7 +148,7 @@ const ModernNavbar = () => {
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
                 className="flex items-center gap-2 pl-2 pr-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
               >
-                <div className="w-8 h-8 rounded-full bg-green-600 flex items-center justify-center text-white text-sm font-bold">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white text-sm font-bold">
                   {user?.firstName?.charAt(0)?.toUpperCase() || <User className="h-4 w-4" />}
                 </div>
                 <ChevronDown className={`h-3.5 w-3.5 text-gray-500 transition-transform ${isProfileOpen ? 'rotate-180' : ''}`} />
@@ -252,11 +229,8 @@ const ModernNavbar = () => {
             <Link to="/browse" className="flex items-center gap-3 px-3 py-3 text-base font-medium text-gray-900 rounded-lg hover:bg-gray-50" onClick={() => setIsMenuOpen(false)}>
               <ShoppingBag className="h-5 w-5 text-[#108c4b]" /> Browse
             </Link>
-            <Link to="/sell" className="flex items-center gap-3 px-3 py-3 text-base font-medium text-gray-900 rounded-lg hover:bg-gray-50" onClick={() => setIsMenuOpen(false)}>
-              <ShoppingCart className="h-5 w-5 text-green-600" /> Sell Item
-            </Link>
-            <Link to="/swap" className="flex items-center gap-3 px-3 py-3 text-base font-medium text-gray-900 rounded-lg hover:bg-gray-50" onClick={() => setIsMenuOpen(false)}>
-              <Recycle className="h-5 w-5 text-blue-600" /> Swap Item
+            <Link to="/sell-swap" className="flex items-center gap-3 px-3 py-3 text-base font-medium text-gray-900 rounded-lg hover:bg-gray-50" onClick={() => setIsMenuOpen(false)}>
+              <Recycle className="h-5 w-5 text-blue-600" /> Sell/Swap
             </Link>
             <Link to="/donate" className="flex items-center gap-3 px-3 py-3 text-base font-medium text-gray-900 rounded-lg hover:bg-gray-50" onClick={() => setIsMenuOpen(false)}>
               <Heart className="h-5 w-5 text-red-500" /> Donate
@@ -274,7 +248,7 @@ const ModernNavbar = () => {
             {isAuthenticated ? (
               <div className="border-t border-gray-100 pt-3 mt-3">
                 <div className="flex items-center gap-3 px-3 mb-3">
-                  <div className="w-9 h-9 rounded-full bg-green-600 flex items-center justify-center text-white font-bold">
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white font-bold">
                     {user?.firstName?.charAt(0)?.toUpperCase() || 'U'}
                   </div>
                   <div>
