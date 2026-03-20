@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 
 const SellSwap = () => {
-  const { user } = useAuth();
+  const { user, api } = useAuth();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -148,15 +148,15 @@ const SellSwap = () => {
         formDataToSend.append('image', previewImages[0].file);
       }
 
-      const response = await fetch('http://localhost:5000/api/items/create', {
-        method: 'POST',
-        body: formDataToSend,
+      // Use the authenticated api instance from useAuth
+      const response = await api.post('/items/create', formDataToSend, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to list item');
+      if (!response.data.success) {
+        throw new Error(response.data.message || 'Failed to list item');
       }
       
       setSubmitSuccess(true);

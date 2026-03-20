@@ -4,10 +4,11 @@ import AdminLayout from '../components/admin/AdminLayout';
 import AdminOverview from '../components/admin/AdminOverview';
 import UserManagement from '../components/admin/UserManagement';
 import ListingManagement from '../components/admin/ListingManagement';
-import SwapMonitoring from '../components/admin/SwapMonitoring';
-import Moderation from '../components/admin/Moderation';
-import CategoryManagement from '../components/admin/CategoryManagement';
+import SwapRequestManagement from '../components/admin/SwapRequestManagement';
+import ReportsManagement from '../components/admin/ReportsManagement';
 import DonationsManagement from '../components/admin/DonationsManagement';
+import OrdersManagement from '../components/admin/OrdersManagement';
+import Analytics from '../components/admin/Analytics';
 
 const AdminDashboard = () => {
   const { api } = useAuth();
@@ -18,9 +19,8 @@ const AdminDashboard = () => {
     items: [],
     swaps: [],
     reports: [],
-    categories: [],
-    recentUsers: [],
-    recentItems: []
+    donations: [],
+    orders: []
   });
 
   useEffect(() => {
@@ -32,23 +32,23 @@ const AdminDashboard = () => {
       setLoading(true);
       const [
         statsRes, itemsRes, 
-        swapsRes, reportsRes, categoriesRes
+        swapsRes, reportsRes, ordersRes, donationsRes
       ] = await Promise.all([
         api.get('/admin/dashboard/stats'),
         api.get('/admin/items'),
         api.get('/admin/swaps'),
         api.get('/admin/reports'),
-        api.get('/categories')
+        api.get('/admin/orders'),
+        api.get('/admin/donations')
       ]);
 
       setData({
-        stats: statsRes.data.data.overview,
+        stats: statsRes.data.data,
         items: itemsRes.data.data.items || [],
         swaps: swapsRes.data.data.swaps || [],
         reports: reportsRes.data.data.reports || [],
-        categories: categoriesRes.data.data.categories || [],
-        recentUsers: statsRes.data.data.recentUsers || [],
-        recentItems: statsRes.data.data.recentItems || []
+        orders: ordersRes.data.data.orders || [],
+        donations: donationsRes.data.data.donations || []
       });
     } catch (error) {
       console.error('Error fetching admin data:', error);
@@ -57,9 +57,6 @@ const AdminDashboard = () => {
     }
   };
 
-
-
-  // Item Actions
   const handleUpdateItemStatus = async (itemId, status) => {
     try {
       await api.put(`/admin/items/${itemId}/status`, { status });
@@ -79,38 +76,24 @@ const AdminDashboard = () => {
     }
   };
 
-  // Category Actions
-  const handleAddCategory = async (catData) => {
+  const handleUpdateSwapStatus = async (swapId, status) => {
     try {
-      await api.post('/categories', catData);
+      await api.put(`/admin/swaps/${swapId}`, { status });
       fetchAllData();
     } catch (error) {
-      alert(error.response?.data?.message || 'Failed to add category');
+      alert('Failed to update swap status');
     }
   };
 
-  const handleUpdateCategory = async (id, catData) => {
+  const handleDeleteSwap = async (swapId) => {
+    if (!window.confirm('Delete this swap request?')) return;
     try {
-      await api.put(`/categories/${id}`, catData);
+      await api.delete(`/admin/swaps/${swapId}`);
       fetchAllData();
     } catch (error) {
-      alert('Failed to update category');
+      alert('Failed to delete swap request');
     }
   };
-
-  const handleDeleteCategory = async (id) => {
-    if (!window.confirm('Delete this category?')) return;
-    try {
-      await api.delete(`/categories/${id}`);
-      fetchAllData();
-    } catch (error) {
-      alert(error.response?.data?.message || 'Failed to delete category');
-    }
-  };
-
-  // Placeholder for Swap/Report actions (can be expanded)
-  const handleSwapAction = (id) => alert(`Action on swap ${id} coming soon`);
-  const handleReportAction = (id) => alert(`Action on report ${id} coming soon`);
 
   if (loading) {
     return (
@@ -128,7 +111,7 @@ const AdminDashboard = () => {
   const renderContent = () => {
     switch (activeTab) {
       case 'overview':
-        return <AdminOverview stats={data.stats} recentUsers={data.recentUsers} recentItems={data.recentItems} />;
+        return <AdminOverview stats={data.stats} />;
       case 'users':
         return <UserManagement />;
       case 'listings':
@@ -141,31 +124,27 @@ const AdminDashboard = () => {
         );
       case 'swaps':
         return (
-          <SwapMonitoring 
+          <SwapRequestManagement 
             swaps={data.swaps} 
-            onResolveSwap={handleSwapAction} 
-            onCancelSwap={handleSwapAction} 
-          />
-        );
-      case 'reports':
-        return (
-          <Moderation 
-            reports={data.reports} 
-            onResolveReport={handleReportAction} 
-            onDismissReport={handleReportAction} 
-          />
-        );
-      case 'categories':
-        return (
-          <CategoryManagement 
-            categories={data.categories} 
-            onAddCategory={handleAddCategory} 
-            onUpdateCategory={handleUpdateCategory} 
-            onDeleteCategory={handleDeleteCategory} 
+            onUpdateStatus={handleUpdateSwapStatus}
+            onDeleteSwap={handleDeleteSwap}
           />
         );
       case 'donations':
         return <DonationsManagement />;
+      case 'orders':
+        return <OrdersManagement orders={data.orders} />;
+      case 'messages':
+        return (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <h4 className="text-2xl font-black text-gray-900 uppercase italic">Messages System</h4>
+            <p className="text-gray-400 mt-2 font-bold uppercase tracking-widest text-xs">Standard message log integration pending</p>
+          </div>
+        );
+      case 'reports':
+        return <ReportsManagement reports={data.reports} />;
+      case 'analytics':
+        return <Analytics stats={data.stats} />;
       default:
         return (
           <div className="flex flex-col items-center justify-center py-20 text-center">

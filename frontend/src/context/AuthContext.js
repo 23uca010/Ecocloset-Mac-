@@ -2,7 +2,7 @@ import React, { createContext, useContext, useReducer, useEffect, useCallback } 
 import axios from 'axios';
 
 // API Configuration
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
 
 // Auth context
 const AuthContext = createContext();
@@ -127,7 +127,7 @@ export const AuthProvider = ({ children }) => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
       
-      const response = await fetch(`http://localhost:5000/api/auth/login`, {
+      const response = await fetch(`http://localhost:5001/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

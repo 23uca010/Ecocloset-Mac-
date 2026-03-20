@@ -322,7 +322,7 @@ const UserProfile = () => {
                     <Link key={item.id} to={`/item/${item.id}`} className="group block rounded-2xl border border-gray-100 overflow-hidden hover:shadow-md hover:border-green-200 transition-all bg-white relative">
                       <div className="aspect-square bg-gray-100 overflow-hidden relative">
                         {item.image ? (
-                          <img src={`http://localhost:5000/${item.image.replace(/\\/g, '/')}`} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                          <img src={`http://localhost:5001/${item.image.replace(/\\/g, '/')}`} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-gray-400">No Image</div>
                         )}

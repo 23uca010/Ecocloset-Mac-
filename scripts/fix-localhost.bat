@@ -5,7 +5,7 @@ echo ========================================
 echo.
 
 echo Step 1: Diagnosing project structure...
-cd /d "c:\Users\Stergio Eugin\Desktop\ecocloset-project"
+cd /d "%~dp0.."
 echo Current directory: %CD%
 echo.
 

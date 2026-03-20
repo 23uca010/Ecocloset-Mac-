@@ -1,33 +1,31 @@
 @echo off
 echo ========================================
-echo Starting EcoCloset Application
+echo Starting Figma-Style EcoCloset Website
 echo ========================================
 echo.
 
-echo Step 1: Starting Backend...
-cd /d "c:\Users\Stergio Eugin\Desktop\ecocloset-project\backend"
+echo Step 1: Starting Backend Server...
+cd /d "%~dp0..\backend"
 echo Current directory: %CD%
-echo Checking if server-working.js exists...
 if exist server-working.js (
     echo Found server-working.js, starting backend...
     start "Backend Server" cmd /k "node server-working.js"
     echo Backend started on port 5000
 ) else (
-    echo server-working.js not found, creating it...
-    echo Backend not available
+    echo server-working.js not found, please check backend setup
     pause
     exit /b
 )
 
 echo.
-echo Step 2: Starting Frontend...
-cd /d "c:\Users\Stergio Eugin\Desktop\ecocloset-project\frontend"
+echo Step 2: Starting Frontend Server...
+cd /d "%~dp0..\frontend"
 echo Current directory: %CD%
-echo Checking if package.json exists...
 if exist package.json (
-    echo Found package.json, installing dependencies...
+    echo Found package.json, starting frontend...
+    echo Installing dependencies...
     call npm install
-    echo Dependencies installed, starting frontend...
+    echo Dependencies installed, starting frontend server...
     start "Frontend Server" cmd /k "npm start"
     echo Frontend starting on port 3000
 ) else (
@@ -41,22 +39,24 @@ echo ========================================
 echo Both servers starting...
 echo Backend: http://localhost:5000
 echo Frontend: http://localhost:3000
+echo Design: Figma-Style Modern UI
+echo Features: Clothing Swap & Sell Platform
 echo ========================================
 echo.
-echo Please wait 10 seconds for servers to start...
-timeout /t 10 >nul
+echo Please wait 15 seconds for servers to start...
+timeout /t 15 >nul
 
 echo.
 echo Opening browser to main website...
 start http://localhost:3000
 
 echo.
-echo Opening browser to API health check...
-start http://localhost:5000/api
+echo Opening Figma reference...
+start https://www.figma.com/make/H0sm7duQOevyKhzfTPy0kY/Clothing-Swap-and-Sell-Platform
 
 echo.
 echo ========================================
-echo EcoCloset Application Started!
+echo EcoCloset Figma-Style Website Started!
 echo ========================================
 echo.
 echo Press any key to exit...

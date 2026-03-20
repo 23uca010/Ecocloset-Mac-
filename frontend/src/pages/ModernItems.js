@@ -83,7 +83,7 @@ const ModernItems = () => {
     try {
       setLoading(true);
       
-      const response = await fetch('http://localhost:5000/api/items');
+      const response = await fetch('http://localhost:5001/api/items');
       const data = await response.json();
       
       if (response.ok && data.success) {
@@ -91,7 +91,7 @@ const ModernItems = () => {
         const mappedItems = data.data.map(item => ({
           ...item,
           _id: item.id,
-          images: item.image ? [`http://localhost:5000/${item.image.replace(/\\/g, '/')}`] : []
+          images: item.image ? [`http://localhost:5001/${item.image.replace(/\\/g, '/')}`] : []
         }));
         setItems(mappedItems);
       } else {

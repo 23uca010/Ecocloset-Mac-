@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 
 const AddListing = () => {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, api } = useAuth();
   const navigate = useNavigate();
   
   const [formData, setFormData] = useState({
@@ -180,18 +180,10 @@ const AddListing = () => {
         image: previewImages.length > 0 ? previewImages[0].preview : 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&q=80&w=800'
       };
 
-      const response = await fetch("http://localhost:5000/api/items/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(submissionData)
-      });
+      const response = await api.post("/items/create", submissionData);
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to create listing');
+      if (!response.data.success) {
+        throw new Error(response.data.message || 'Failed to create listing');
       }
       
       // Show success message

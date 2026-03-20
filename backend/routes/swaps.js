@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { authenticate } = require('../middleware/auth');
+const { isAuth } = require('../middleware/auth');
 const {
   createSwapRequest,
   getSwapRequests,
@@ -11,11 +11,11 @@ const {
 } = require('../controllers/swapController');
 
 // All routes are protected
-router.post('/', authenticate, createSwapRequest);
-router.get('/', authenticate, getSwapRequests);
-router.get('/:id', authenticate, getSwapRequestById);
-router.put('/:id/respond', authenticate, respondToSwapRequest);
-router.put('/:id/complete', authenticate, completeSwapRequest);
-router.put('/:id/cancel', authenticate, cancelSwapRequest);
+router.post('/', isAuth, createSwapRequest);
+router.get('/', isAuth, getSwapRequests);
+router.get('/:id', isAuth, getSwapRequestById);
+router.put('/:id/respond', isAuth, respondToSwapRequest);
+router.put('/:id/complete', isAuth, completeSwapRequest);
+router.put('/:id/cancel', isAuth, cancelSwapRequest);
 
 module.exports = router;

@@ -3,14 +3,14 @@ echo Starting EcoCloset Application...
 echo.
 
 echo Step 1: Starting Backend Server...
-cd backend
+cd /d "%~dp0..\backend"
 start "Backend Server" cmd /k "npm run dev"
 
 echo Waiting for backend to start...
 timeout /t 5 /nobreak >nul
 
 echo Step 2: Starting Frontend Server...
-cd ../frontend
+cd "%~dp0..\frontend"
 start "Frontend Server" cmd /k "npm start"
 
 echo.

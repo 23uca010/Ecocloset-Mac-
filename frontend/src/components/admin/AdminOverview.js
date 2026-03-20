@@ -1,23 +1,16 @@
 import React from 'react';
 import { 
-  Users, ShoppingBag, Repeat, 
-  AlertTriangle, ArrowUpRight, ArrowDownRight,
-  TrendingUp, Clock
+  Users, ShoppingBag, Repeat, Heart,
+  Clock, TrendingUp, AlertTriangle
 } from 'lucide-react';
 
-const AdminOverview = ({ stats, recentUsers, recentItems }) => {
-  const StatCard = ({ title, value, icon, color, trend, trendValue }) => (
+const AdminOverview = ({ stats }) => {
+  const StatCard = ({ title, value, icon, color }) => (
     <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm transition-all hover:shadow-md">
       <div className="flex justify-between items-start mb-4">
         <div className={`p-3 rounded-xl ${color}`}>
           {icon}
         </div>
-        {trend && (
-          <div className={`flex items-center gap-1 text-xs font-bold ${trend === 'up' ? 'text-emerald-600' : 'text-rose-600'}`}>
-            {trend === 'up' ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
-            {trendValue}
-          </div>
-        )}
       </div>
       <div>
         <p className="text-sm font-medium text-gray-500 mb-1">{title}</p>
@@ -28,36 +21,22 @@ const AdminOverview = ({ stats, recentUsers, recentItems }) => {
 
   // Simple SVG Chart component
   const ActivityChart = () => {
-    const chartData = stats?.chartData || [];
-    const maxVal = Math.max(...chartData.map(d => Math.max(d.listings, d.swaps, 1))); // at least 1 to avoid div by 0
+    const chartData = stats?.analytics || [];
+    const maxVal = Math.max(...chartData.map(d => Math.max(d.listings, d.swaps, d.donations, d.users, 1)));
 
     return (
       <div className="h-64 w-full flex items-end justify-between gap-2 pt-4">
         {chartData.map((data, i) => {
-          const listingsHeight = (data.listings / maxVal) * 100;
-          const swapsHeight = (data.swaps / maxVal) * 100;
+          const h1 = (data.listings / maxVal) * 100;
+          const h2 = (data.swaps / maxVal) * 100;
+          const h3 = (data.donations / maxVal) * 100;
           
           return (
             <div key={i} className="flex-1 flex flex-col items-center group h-full justify-end">
               <div className="w-full flex items-end gap-[1px] h-full"> 
-                {/* Swaps Bar */}
-                <div 
-                  className="flex-1 bg-indigo-600 rounded-t-sm transition-all relative group-hover:bg-indigo-700"
-                  style={{ height: `${swapsHeight}%`, minHeight: data.swaps > 0 ? '4px' : '0' }}
-                >
-                  {data.swaps > 0 && <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] py-0.5 px-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity z-10 w-max pointer-events-none">
-                    {data.swaps} swaps
-                  </div>}
-                </div>
-                {/* Listings Bar */}
-                <div 
-                  className="flex-1 bg-indigo-200 rounded-t-sm transition-all relative group-hover:bg-indigo-300"
-                  style={{ height: `${listingsHeight}%`, minHeight: data.listings > 0 ? '4px' : '0' }}
-                >
-                   {data.listings > 0 && <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] py-0.5 px-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity z-10 w-max pointer-events-none">
-                    {data.listings} listings
-                  </div>}
-                </div>
+                <div className="flex-1 bg-indigo-600 rounded-t-sm" style={{ height: `${h2}%` }}></div>
+                <div className="flex-1 bg-indigo-200 rounded-t-sm" style={{ height: `${h1}%` }}></div>
+                <div className="flex-1 bg-emerald-400 rounded-t-sm" style={{ height: `${h3}%` }}></div>
               </div>
               <span className="text-[10px] text-gray-400 mt-2 font-bold uppercase tracking-tighter">
                 {data.month}
@@ -72,152 +51,47 @@ const AdminOverview = ({ stats, recentUsers, recentItems }) => {
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <StatCard 
           title="Total Users" 
-          value={stats?.totalUsers || 0} 
+          value={stats?.overview?.totalUsers || 0} 
           icon={<Users className="text-blue-600" size={24} />} 
           color="bg-blue-50"
-          trend="up"
-          trendValue="12%"
         />
         <StatCard 
           title="Total Listings" 
-          value={stats?.totalListings || 0} 
+          value={stats?.overview?.totalListings || 0} 
           icon={<ShoppingBag className="text-emerald-600" size={24} />} 
           color="bg-emerald-50"
-          trend="up"
-          trendValue="8.5%"
+        />
+        <StatCard 
+          title="Total Donations" 
+          value={stats?.overview?.totalDonations || 0} 
+          icon={<Heart className="text-rose-600" size={24} />} 
+          color="bg-rose-50"
         />
         <StatCard 
           title="Total Swaps" 
-          value={stats?.totalSwaps || 0} 
+          value={stats?.overview?.totalSwaps || 0} 
           icon={<Repeat className="text-amber-600" size={24} />} 
           color="bg-amber-50"
-          trend="down"
-          trendValue="2.1%"
         />
         <StatCard 
-          title="Reported Items" 
-          value={stats?.reportedItems || 0} 
-          icon={<AlertTriangle className="text-rose-600" size={24} />} 
-          color="bg-rose-50"
-          trend="down"
-          trendValue="15%"
+          title="Pending Swaps" 
+          value={stats?.overview?.pendingSwaps || 0} 
+          icon={<Clock className="text-indigo-600" size={24} />} 
+          color="bg-indigo-50"
+        />
+        <StatCard 
+          title="Completed Swaps" 
+          value={stats?.overview?.completedSwaps || 0} 
+          icon={<TrendingUp className="text-emerald-600" size={24} />} 
+          color="bg-emerald-50"
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Main Chart Section */}
-        <div className="lg:col-span-2 bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
-          <div className="flex justify-between items-center mb-8">
-            <div>
-              <h3 className="text-xl font-bold text-gray-900">Platform Growth</h3>
-              <p className="text-sm text-gray-500">Monthly listings and swap activity</p>
-            </div>
-            <div className="flex gap-2">
-              <span className="flex items-center gap-1.5 text-xs font-bold text-gray-500">
-                <span className="h-2 w-2 rounded-full bg-indigo-600"></span> Swaps
-              </span>
-              <span className="flex items-center gap-1.5 text-xs font-bold text-gray-500">
-                <span className="h-2 w-2 rounded-full bg-indigo-200"></span> Listings
-              </span>
-            </div>
-          </div>
-          <ActivityChart />
-        </div>
-
-        {/* Right Sidebar Activity */}
-        <div className="space-y-8">
-          {/* Quick Stats */}
-          <div className="bg-indigo-600 p-8 rounded-3xl text-white shadow-xl shadow-indigo-100">
-            <h4 className="text-lg font-bold mb-4 flex items-center gap-2">
-              <TrendingUp size={20} />
-              Approval Rate
-            </h4>
-            <div className="text-4xl font-black mb-2">{stats?.approvalRate || 0}%</div>
-            <p className="text-indigo-100 text-sm">Target threshold: 90%</p>
-            <div className="mt-6 h-1 w-full bg-white/20 rounded-full overflow-hidden">
-              <div className="h-full bg-white rounded-full" style={{ width: `${stats?.approvalRate || 0}%` }}></div>
-            </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-            <h4 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <Clock size={18} className="text-indigo-600" />
-              Pending Actions
-            </h4>
-            <div className="space-y-4">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Listing Approvals</span>
-                <span className="font-bold text-emerald-600">{stats?.pendingListings || 0}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">New Reports</span>
-                <span className="font-bold text-rose-600">{stats?.reportedItems || 0}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Unresolved Swaps</span>
-                <span className="font-bold text-amber-600">{stats?.totalSwaps || 0}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Recent Activity Tables */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="p-6 border-b border-gray-50 flex justify-between items-center bg-gray-50/30">
-            <h4 className="font-bold text-gray-900">New Users</h4>
-            <button className="text-xs font-bold text-indigo-600 hover:underline">View All</button>
-          </div>
-          <div className="p-6 space-y-4">
-            {recentUsers?.map(u => (
-              <div key={u.id} className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-50 to-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-sm">
-                    {u.name?.[0] || 'U'}
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-gray-900">{u.name}</p>
-                    <p className="text-xs text-gray-500">{u.email}</p>
-                  </div>
-                </div>
-                <span className="text-[10px] font-bold text-gray-400">
-                  {new Date(u.created_at).toLocaleDateString()}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="p-6 border-b border-gray-50 flex justify-between items-center bg-gray-50/30">
-            <h4 className="font-bold text-gray-900">Recent Listings</h4>
-            <button className="text-xs font-bold text-indigo-600 hover:underline">View All</button>
-          </div>
-          <div className="p-6 space-y-4">
-             {recentItems?.map(item => (
-              <div key={item.id} className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400">
-                    <ShoppingBag size={20} />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-gray-900">{item.title}</p>
-                    <p className="text-xs text-gray-500">{item.category}</p>
-                  </div>
-                </div>
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-widest ${
-                  item.status === 'active' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'
-                }`}>
-                  {item.status}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
+        {/* Recent activity integration point */}
       </div>
     </div>
   );

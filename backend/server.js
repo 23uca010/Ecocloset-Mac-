@@ -4,6 +4,8 @@ const path = require("path")
 const bcrypt = require("bcrypt")
 const multer = require("multer")
 const fs = require("fs")
+
+fs.writeFileSync(path.join(__dirname, "server_load_debug.log"), `Server loaded from ${__dirname} at ${new Date().toISOString()}\n`);
 const db = require("./database/sqlite")
 
 console.log("Modules loaded, initializing app...");
@@ -73,10 +75,11 @@ db.exec(`
     );
     CREATE TABLE IF NOT EXISTS swaps(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_a_id INTEGER,
-        user_b_id INTEGER,
-        item_a_id INTEGER,
-        item_b_id INTEGER,
+        user_a_id INTEGER, -- Requester
+        user_b_id INTEGER, -- Owner
+        item_a_id INTEGER, -- Requester item (if swapping)
+        item_b_id INTEGER, -- Owner item
+        message TEXT,
         status TEXT DEFAULT 'pending',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(user_a_id) REFERENCES users(id),
@@ -122,6 +125,27 @@ db.exec(`
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(sender_id) REFERENCES users(id),
         FOREIGN KEY(receiver_id) REFERENCES users(id),
+        FOREIGN KEY(item_id) REFERENCES items(id)
+    );
+    CREATE TABLE IF NOT EXISTS reports(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        reporter_id INTEGER,
+        target_id INTEGER,
+        target_type TEXT, -- 'user' or 'item'
+        reason TEXT,
+        status TEXT DEFAULT 'pending',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(reporter_id) REFERENCES users(id)
+    );
+    CREATE TABLE IF NOT EXISTS orders(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        buyer_id INTEGER,
+        item_id INTEGER,
+        price INTEGER,
+        payment_status TEXT DEFAULT 'pending',
+        order_status TEXT DEFAULT 'processing',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(buyer_id) REFERENCES users(id),
         FOREIGN KEY(item_id) REFERENCES items(id)
     );
 `);
@@ -215,9 +239,8 @@ try {
     console.error("Error initializing admin:", error.message);
 }
 
-// Root route
 app.get("/", (req, res) => {
-    res.json({ message: "EcoCloset Backend API is running (better-sqlite3)" });
+    res.json({ message: "DEBUG_VERIFICATION_MARKER_V1" });
 });
 
 // Debug route to check DB schema
@@ -237,48 +260,17 @@ app.get("/api/debug/db", (req, res) => {
     }
 });
 
-// Middleware to check if user is admin (Keeping it here for route protection)
-const isAdmin = (req, res, next) => {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-        return res.status(401).json({ success: false, message: "No token provided" });
-    }
+// Debug route to check which folder is actually running
+app.get("/api/debug/where-am-i", (req, res) => {
+    res.json({
+        success: true,
+        dirname: __dirname,
+        cwd: process.cwd(),
+        now: new Date().toISOString()
+    });
+});
 
-    const token = authHeader.split(" ")[1];
-    if (!token.startsWith("mock-jwt-token-")) {
-        return res.status(401).json({ success: false, message: "Invalid token" });
-    }
-
-    const userId = token.split("-")[3];
-    try {
-        const user = db.prepare("SELECT role FROM users WHERE id = ?").get(userId);
-        if (user && user.role === 'admin') {
-            req.userId = userId;
-            next();
-        } else {
-            res.status(403).json({ success: false, message: "Unauthorized. Admin access required." });
-        }
-    } catch (err) {
-        res.status(500).json({ success: false, error: err.message });
-    }
-}
-
-// General Auth Middleware
-const isAuth = (req, res, next) => {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-        return res.status(401).json({ success: false, message: "No token provided" });
-    }
-
-    const token = authHeader.split(" ")[1];
-    if (!token.startsWith("mock-jwt-token-")) {
-        return res.status(401).json({ success: false, message: "Invalid token" });
-    }
-
-    const userId = token.split("-")[3];
-    req.userId = userId;
-    next();
-};
+const { isAdmin, isAuth } = require('./middleware/auth');
 
 // Auth APIs (Kept inline for simplicity as they are core, but can be modularized later)
 app.post("/api/auth/login", (req, res) => {
@@ -389,9 +381,10 @@ app.use("/api/items", require("./routes/items"));
 app.use("/api/categories", require("./routes/categories"));
 app.use("/api/messages", isAuth, require("./routes/messages"));
 app.use("/api/donations", require("./routes/donations"));
+app.use("/api/swaps", isAuth, require("./routes/swaps"));
 console.log("Modular routes registered.");
 
-const PORT = 5000;
+const PORT = 5001;
 app.listen(PORT, () => {
     console.log(`EcoCloset backend running on port ${PORT}`)
 })

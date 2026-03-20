@@ -105,17 +105,17 @@ const SellPage = () => {
   return (
     <div className="min-h-screen bg-gray-50 pb-16">
       {/* Hero */}
-      <div className="bg-white border-b border-gray-100 py-12 px-4 shadow-sm mb-8 z-10 relative">
+      <div className="bg-gradient-to-r from-green-600 to-emerald-500 text-white py-14 px-4">
         <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center justify-center w-12 h-12 bg-green-50 rounded-full mb-4 border border-green-100">
-            <ShoppingCart className="h-6 w-6 text-green-600" />
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 rounded-2xl mb-5">
+            <ShoppingCart className="h-8 w-8 text-white" />
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold mb-2 text-gray-900">Sell Your Item</h1>
-          <p className="text-gray-500 text-base max-w-xl mx-auto">List your pre-loved clothing and earn money while giving it a second life.</p>
+          <h1 className="text-4xl md:text-5xl font-extrabold mb-3 tracking-tight">Sell Your Item</h1>
+          <p className="text-green-100 text-lg max-w-xl mx-auto">List your pre-loved clothing and earn money while giving it a second life.</p>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6">
         {/* Status Messages */}
         {submitSuccess && (
           <div className="mb-6 bg-green-50 border border-green-200 rounded-2xl p-5 flex items-start shadow-sm">
@@ -153,52 +153,52 @@ const SellPage = () => {
             {/* Left Column - Form */}
             <div className="xl:col-span-2 space-y-6">
 
-               {/* Basic Info */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                <div className="flex items-center gap-3 p-5 border-b border-gray-100 bg-gray-50">
-                  <div className="w-8 h-8 bg-green-100 rounded flex items-center justify-center">
-                    <Tag className="h-4 w-4 text-green-600" />
+              {/* Basic Info */}
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="flex items-center gap-4 p-6 border-b border-gray-100 bg-gray-50/50">
+                  <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
+                    <Tag className="h-5 w-5 text-green-600" />
                   </div>
                   <div>
-                    <h2 className="text-base font-semibold text-gray-900">Basic Information</h2>
-                    <p className="text-xs text-gray-500">Tell buyers about your item</p>
+                    <h2 className="text-lg font-bold text-gray-900">Basic Information</h2>
+                    <p className="text-sm text-gray-500">Tell buyers about your item</p>
                   </div>
                 </div>
                 <div className="p-6 space-y-5">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Item Title <span className="text-red-500">*</span></label>
+                    <label className="block text-sm font-semibold text-gray-800 mb-1.5">Item Title <span className="text-red-500">*</span></label>
                     <input
                       type="text"
                       name="title"
                       value={formData.title}
                       onChange={handleInputChange}
-                      className={`w-full px-3 py-2 border rounded-md focus:ring-1 focus:ring-green-500 focus:border-green-500 text-gray-900 bg-white ${errors.title ? 'border-red-400' : 'border-gray-300'}`}
+                      className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-green-300 focus:border-green-500 transition-all text-gray-900 bg-gray-50 focus:bg-white ${errors.title ? 'border-red-400' : 'border-gray-200'}`}
                       placeholder="e.g., Vintage Denim Jacket"
                     />
                     {errors.title && <p className="text-red-500 text-xs mt-1">{errors.title}</p>}
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Brand</label>
+                      <label className="block text-sm font-semibold text-gray-800 mb-1.5">Brand</label>
                       <input type="text" name="brand" value={formData.brand} onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-green-500 focus:border-green-500 bg-white text-gray-900"
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-300 focus:border-green-500 transition-all bg-gray-50 focus:bg-white text-gray-900"
                         placeholder="e.g., Levi's, H&M" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Price (₹) <span className="text-red-500">*</span></label>
+                      <label className="block text-sm font-semibold text-gray-800 mb-1.5">Price (₹) <span className="text-red-500">*</span></label>
                       <div className="relative">
-                        <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        <IndianRupee className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                         <input type="number" name="price" value={formData.price} onChange={handleInputChange}
-                          className={`w-full pl-8 pr-3 py-2 border rounded-md focus:ring-1 focus:ring-green-500 focus:border-green-500 bg-white text-gray-900 ${errors.price ? 'border-red-400' : 'border-gray-300'}`}
+                          className={`w-full pl-10 pr-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-green-300 focus:border-green-500 transition-all bg-gray-50 focus:bg-white text-gray-900 ${errors.price ? 'border-red-400' : 'border-gray-200'}`}
                           placeholder="0" />
                       </div>
                       {errors.price && <p className="text-red-500 text-xs mt-1">{errors.price}</p>}
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Description <span className="text-red-500">*</span></label>
+                    <label className="block text-sm font-semibold text-gray-800 mb-1.5">Description <span className="text-red-500">*</span></label>
                     <textarea name="description" value={formData.description} onChange={handleInputChange} rows={4}
-                      className={`w-full px-3 py-2 border rounded-md focus:ring-1 focus:ring-green-500 focus:border-green-500 bg-white resize-none text-gray-900 ${errors.description ? 'border-red-400' : 'border-gray-300'}`}
+                      className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-green-300 focus:border-green-500 transition-all bg-gray-50 focus:bg-white resize-none text-gray-900 ${errors.description ? 'border-red-400' : 'border-gray-200'}`}
                       placeholder="Describe your item, its condition, and any special features..." />
                     {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description}</p>}
                   </div>
@@ -206,47 +206,47 @@ const SellPage = () => {
               </div>
 
               {/* Item Details */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                <div className="flex items-center gap-3 p-5 border-b border-gray-100 bg-gray-50">
-                  <div className="w-8 h-8 bg-blue-100 rounded flex items-center justify-center">
-                    <Package className="h-4 w-4 text-blue-600" />
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="flex items-center gap-4 p-6 border-b border-gray-100 bg-gray-50/50">
+                  <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                    <Package className="h-5 w-5 text-blue-600" />
                   </div>
                   <div>
-                    <h2 className="text-base font-semibold text-gray-900">Item Details</h2>
-                    <p className="text-xs text-gray-500">Help buyers find your item</p>
+                    <h2 className="text-lg font-bold text-gray-900">Item Details</h2>
+                    <p className="text-sm text-gray-500">Help buyers find your item</p>
                   </div>
                 </div>
                 <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-5">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Category <span className="text-red-500">*</span></label>
+                    <label className="block text-sm font-semibold text-gray-800 mb-1.5">Category <span className="text-red-500">*</span></label>
                     <select name="category" value={formData.category} onChange={handleInputChange}
-                      className={`w-full px-3 py-2 border rounded-md focus:ring-1 focus:ring-green-500 focus:border-green-500 bg-white text-gray-700 ${errors.category ? 'border-red-400' : 'border-gray-300'}`}>
+                      className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-green-300 focus:border-green-500 transition-all bg-gray-50 font-medium text-gray-700 ${errors.category ? 'border-red-400' : 'border-gray-200'}`}>
                       <option value="">Select Category</option>
                       {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                     </select>
                     {errors.category && <p className="text-red-500 text-xs mt-1">{errors.category}</p>}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Condition <span className="text-red-500">*</span></label>
+                    <label className="block text-sm font-semibold text-gray-800 mb-1.5">Condition <span className="text-red-500">*</span></label>
                     <select name="condition" value={formData.condition} onChange={handleInputChange}
-                      className={`w-full px-3 py-2 border rounded-md focus:ring-1 focus:ring-green-500 focus:border-green-500 bg-white text-gray-700 ${errors.condition ? 'border-red-400' : 'border-gray-300'}`}>
+                      className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-green-300 focus:border-green-500 transition-all bg-gray-50 font-medium text-gray-700 ${errors.condition ? 'border-red-400' : 'border-gray-200'}`}>
                       <option value="">Select Condition</option>
                       {conditions.map(c => <option key={c} value={c}>{c.replace('_', ' ').toUpperCase()}</option>)}
                     </select>
                     {errors.condition && <p className="text-red-500 text-xs mt-1">{errors.condition}</p>}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Size</label>
+                    <label className="block text-sm font-semibold text-gray-800 mb-1.5">Size</label>
                     <select name="size" value={formData.size} onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-green-500 focus:border-green-500 bg-white text-gray-700">
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-300 focus:border-green-500 transition-all bg-gray-50 font-medium text-gray-700">
                       <option value="">Select Size</option>
                       {sizes.map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
                   </div>
                   <div className="md:col-span-3">
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Color</label>
+                    <label className="block text-sm font-semibold text-gray-800 mb-1.5">Color</label>
                     <input type="text" name="color" value={formData.color} onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-green-500 focus:border-green-500 bg-white text-gray-900"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-300 focus:border-green-500 transition-all bg-gray-50 focus:bg-white text-gray-900"
                       placeholder="e.g., Navy Blue" />
                   </div>
                 </div>
@@ -255,13 +255,13 @@ const SellPage = () => {
 
             {/* Right Column - Images & Submit */}
             <div className="space-y-6">
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden sticky top-24">
-                <div className="flex items-center gap-3 p-5 border-b border-gray-100 bg-gray-50">
-                  <div className="w-8 h-8 bg-indigo-100 rounded flex items-center justify-center">
-                    <Camera className="h-4 w-4 text-indigo-600" />
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden sticky top-24">
+                <div className="flex items-center gap-3 p-6 border-b border-gray-100 bg-gray-50/50">
+                  <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
+                    <Camera className="h-5 w-5 text-indigo-600" />
                   </div>
                   <div>
-                    <h2 className="text-base font-semibold text-gray-900">Photos <span className="text-red-500">*</span></h2>
+                    <h2 className="text-lg font-bold text-gray-900">Photos <span className="text-red-500">*</span></h2>
                     <p className="text-xs text-gray-500">Clear photos sell faster</p>
                   </div>
                 </div>
@@ -299,16 +299,16 @@ const SellPage = () => {
                     </p>
                   )}
                 </div>
-                <div className="p-5 border-t border-gray-200 bg-gray-50">
+                <div className="p-5 border-t border-gray-100 bg-gray-50/30">
                   <button type="submit" form="sell-form" disabled={isSubmitting}
-                    className="w-full bg-green-600 text-white py-3 px-4 rounded-md hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center justify-center font-medium text-base shadow-sm">
+                    className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white py-4 px-6 rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all disabled:opacity-50 flex items-center justify-center font-bold text-base shadow-lg shadow-green-200">
                     {isSubmitting ? (
                       <><div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" /> Processing...</>
                     ) : (
                       <><ShoppingCart className="h-5 w-5 mr-2" /> List for Sale</>
                     )}
                   </button>
-                  <p className="text-xs text-gray-500 text-center mt-3">By publishing, you agree to our Terms of Service.</p>
+                  <p className="text-xs text-gray-400 text-center mt-3">By publishing, you agree to our Terms of Service.</p>
                 </div>
               </div>
             </div>

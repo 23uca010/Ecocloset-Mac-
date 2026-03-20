@@ -9,7 +9,10 @@ const {
   updateItemStatus,
   deleteItem,
   getAdminSwaps,
-  getSystemReports
+  updateSwapStatus,
+  deleteSwapRequest,
+  getSystemReports,
+  getAdminOrders
 } = require('../controllers/adminController');
 const { getAllDonations, updateDonationStatus, deleteDonation } = require('../controllers/donationController');
 
@@ -24,7 +27,10 @@ router.get('/items', getAdminItems);
 router.put('/items/:id/status', updateItemStatus);
 router.delete('/items/:id', deleteItem);
 router.get('/swaps', getAdminSwaps);
+router.put('/swaps/:id', updateSwapStatus);
+router.delete('/swaps/:id', deleteSwapRequest);
 router.get('/reports', getSystemReports);
+router.get('/orders', getAdminOrders);
 
 // Donations management
 router.get('/donations', getAllDonations);

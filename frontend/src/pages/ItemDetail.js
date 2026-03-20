@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
-import { Heart, ArrowLeft, MapPin, Sparkles, Star, Tag, MessageCircle, Send, ShoppingCart, ShoppingBag, X, Trash2, AlertTriangle } from 'lucide-react';
+import { Heart, ArrowLeft, MapPin, Sparkles, Star, Tag, MessageCircle, Send, ShoppingCart, ShoppingBag, X, Trash2, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { formatCurrency } from '../utils/formatters';
 
 const ItemDetail = () => {
@@ -20,6 +20,9 @@ const ItemDetail = () => {
   const [deleteError, setDeleteError] = useState('');
   const [showSwapModal, setShowSwapModal] = useState(false);
   const [userItems, setUserItems] = useState([]);
+  const [selectedUserItem, setSelectedUserItem] = useState(null);
+  const [isSubmittingSwap, setIsSubmittingSwap] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   useEffect(() => {
     fetchItemDetail();
@@ -31,15 +34,15 @@ const ItemDetail = () => {
   const fetchItemDetail = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:5000/api/items/${id}`);
-      const data = await response.json();
+      const response = await api.get(`/items/${id}`);
+      const data = response.data;
       
-      if (response.ok && data.success) {
+      if (response.status === 200 && data.success) {
         const itemData = data.data;
         // Map backend fields to frontend expected structure
         const mappedItem = {
           ...itemData,
-          images: itemData.image ? [`http://localhost:5000/${itemData.image.replace(/\\/g, '/')}`] : [],
+          images: itemData.image ? [`http://localhost:5001/${itemData.image.replace(/\\/g, '/')}`] : [],
           owner: {
             _id: itemData.user_id,
             firstName: itemData.owner_name || "User",
@@ -66,10 +69,39 @@ const ItemDetail = () => {
 
   const fetchUserItems = async () => {
     try {
-      const response = await api.get('/items/user/my-items?status=available');
-      setUserItems(response.data.data.items);
+      const response = await api.get('/items/my-items');
+      const items = response.data?.data || [];
+      console.log('DEBUG: Fetched user items:', items);
+      setUserItems(items);
     } catch (error) {
       console.error('Error fetching user items:', error);
+      setUserItems([]);
+    }
+  };
+
+  const handleSwapRequest = async () => {
+    if (!selectedUserItem) {
+      alert('Please select an item to swap');
+      return;
+    }
+
+    try {
+      setIsSubmittingSwap(true);
+      await api.post('/swaps', {
+        itemOfferedId: Number(selectedUserItem.id),
+        itemRequestedId: Number(id),
+        message: swapMessage
+      });
+      
+      setShowSwapModal(false);
+      setSelectedUserItem(null);
+      setSwapMessage('');
+      setShowSuccessModal(true);
+    } catch (error) {
+      console.error('Swap request error:', error);
+      alert(error.response?.data?.message || 'Failed to send swap request. Please check if both items are specified.');
+    } finally {
+      setIsSubmittingSwap(false);
     }
   };
 
@@ -82,8 +114,8 @@ const ItemDetail = () => {
       setItem(prev => ({
         ...prev,
         likes: isLiked 
-          ? prev.likes.filter(like => like.user !== user._id)
-          : [...prev.likes, { user: user._id, createdAt: new Date() }]
+          ? prev.likes.filter(lk => lk.user !== user.id)
+          : [...(prev.likes || []), { user: user.id, createdAt: new Date() }]
       }));
     } catch (error) {
       console.error('Error toggling like:', error);
@@ -117,7 +149,7 @@ const ItemDetail = () => {
     setIsDeleting(true);
     setDeleteError('');
     try {
-      const response = await fetch(`http://localhost:5000/api/items/${id}`, {
+      const response = await fetch(`http://localhost:5001/api/items/${id}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -179,7 +211,7 @@ const ItemDetail = () => {
           <div className="lg:w-1/2 p-4 lg:p-8 bg-white border-r border-gray-100 flex flex-col">
             <div className="relative w-full aspect-[4/5] sm:aspect-square bg-gray-100 rounded-[1.5rem] overflow-hidden mb-4">
               <img
-                src={item.images[0] || 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=800&q=80'}
+                src={item?.images?.[0] || 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=800&q=80'}
                 alt={item.title}
                 className="w-full h-full object-cover"
               />
@@ -197,7 +229,7 @@ const ItemDetail = () => {
             </div>
             
             {/* Image Thumbnails */}
-            {item.images.length > 1 && (
+            {item?.images?.length > 1 && (
               <div className="grid grid-cols-4 gap-4">
                 {item.images.map((image, index) => (
                   <button key={index} className="aspect-square bg-gray-100 rounded-xl overflow-hidden border-2 border-transparent hover:border-green-500 transition-colors">
@@ -400,62 +432,111 @@ const ItemDetail = () => {
          {showSwapModal && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
             <div className="bg-white rounded-[2rem] max-w-lg w-full p-8 shadow-2xl relative">
-              <button onClick={() => setShowSwapModal(false)} className="absolute top-6 right-6 text-gray-400 hover:text-gray-900">
+              <button 
+                onClick={() => { setShowSwapModal(false); setSelectedUserItem(null); }} 
+                className="absolute top-6 right-6 text-gray-400 hover:text-gray-900"
+              >
                  <X className="h-6 w-6"/>
               </button>
               
               <h3 className="text-2xl font-extrabold text-gray-900 mb-2">Request Swap</h3>
-              <p className="text-gray-600 mb-6">Select one of your items to offer for this swap.</p>
+              <p className="text-gray-600 mb-6 font-medium">Select one of your items to offer for this swap.</p>
               
-              {userItems.length > 0 ? (
-                <div className="space-y-3 max-h-64 overflow-y-auto mb-6 pr-2">
-                  {userItems.map(userItem => (
-                    <div key={userItem._id} className="border border-gray-200 rounded-xl p-4 hover:border-green-500 cursor-pointer transition-colors flex items-center">
-                        <img
-                          src={userItem.images[0] || 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=150&q=80'}
-                          alt={userItem.title}
-                          className="w-16 h-16 object-cover rounded-lg mr-4 bg-gray-100"
-                        />
-                        <div>
-                          <p className="font-bold text-gray-900">{userItem.title}</p>
-                          <p className="text-sm text-gray-500">{userItem.category} • {userItem.size}</p>
+              {(() => {
+                // Simplified: Show ALL user items as per requirements
+                const displayItems = userItems || [];
+                
+                console.log('DEBUG: Items available for selection in modal:', displayItems);
+
+                if (displayItems.length > 0) {
+                  return (
+                    <div className="space-y-3 max-h-64 overflow-y-auto mb-6 pr-2">
+                      {displayItems.map(userItem => (
+                        <div 
+                          key={userItem.id} 
+                          onClick={() => setSelectedUserItem(userItem)}
+                          className={`border-2 rounded-2xl p-4 cursor-pointer transition-all flex items-center ${
+                            selectedUserItem?.id === userItem.id 
+                              ? 'border-indigo-600 bg-indigo-50 shadow-sm' 
+                              : 'border-gray-100 hover:border-gray-300'
+                          }`}
+                        >
+                            <div className="h-16 w-16 rounded-xl bg-gray-100 mr-4 overflow-hidden border border-gray-100 shrink-0">
+                              <img
+                                src={userItem.image ? `http://localhost:5001/${userItem.image.replace(/\\/g, '/')}` : 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=150&q=80'}
+                                alt={userItem.title}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="flex justify-between items-start">
+                                <p className="font-bold text-gray-900 truncate">{userItem.title}</p>
+                                <span className="text-[8px] px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded font-bold uppercase">{userItem.listingType || 'item'}</span>
+                              </div>
+                              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{userItem.category} • {userItem.size}</p>
+                            </div>
+                            {selectedUserItem?.id === userItem.id && (
+                              <div className="ml-3 text-indigo-600">
+                                <CheckCircle2 size={24} />
+                              </div>
+                            )}
                         </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8 bg-gray-50 rounded-2xl mb-6 border border-gray-100">
-                  <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
-                     <Tag className="h-8 w-8 text-gray-400" />
-                  </div>
-                  <p className="text-gray-600 font-medium mb-4">You don't have any items available for swap.</p>
-                  <Link to="/sell-swap" className="bg-[#108c4b] text-white px-6 py-3 rounded-xl font-bold hover:bg-green-700 transition-colors inline-block">
-                    Add an Item
-                  </Link>
-                </div>
-              )}
+                  );
+                } else {
+                  return (
+                    <div className="text-center py-8 bg-gray-50 rounded-2xl mb-6 border border-gray-100">
+                      <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
+                         <Tag className="h-8 w-8 text-gray-400" />
+                      </div>
+                      <p className="text-gray-600 font-medium mb-4 px-6">You don't have any items available for swap.</p>
+                      <Link to="/sell-swap" className="bg-[#108c4b] text-white px-6 py-3 rounded-xl font-bold hover:bg-green-700 transition-colors inline-block">
+                        Add an Item
+                      </Link>
+                    </div>
+                  );
+                }
+              })()}
 
               <div className="mb-6">
-                <label className="block font-bold text-gray-900 mb-2">
+                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">
                   Message to Seller (optional)
                 </label>
                 <textarea
                   value={swapMessage}
                   onChange={(e) => setSwapMessage(e.target.value)}
-                  placeholder="Hi, I'd love to swap..."
-                  className="w-full bg-gray-50 border border-gray-200 rounded-xl p-4 focus:ring-2 focus:ring-green-500 focus:outline-none"
+                  placeholder="Hi, I'd love to swap my item for yours! I think they would be a great match..."
+                  className="w-full bg-gray-50 border border-gray-200 rounded-2xl p-5 text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all"
                   rows="3"
                 />
               </div>
 
               <button
-                onClick={() => {
-                  setShowSwapModal(false);
-                }}
-                className="w-full bg-[#108c4b] text-white py-4 rounded-xl font-bold text-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={userItems.length === 0}
+                onClick={handleSwapRequest}
+                className="w-full bg-indigo-600 text-white py-4 rounded-[1.25rem] font-black text-lg hover:bg-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-indigo-100"
+                disabled={!selectedUserItem || isSubmittingSwap}
               >
-                Send Swap Request
+                {isSubmittingSwap ? 'SENDING REQUEST...' : 'SEND SWAP REQUEST'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Success Modal */}
+        {showSuccessModal && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-[60]">
+            <div className="bg-white rounded-[2rem] max-w-sm w-full p-8 shadow-2xl text-center transform transition-all animate-in fade-in zoom-in duration-300">
+              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <CheckCircle2 className="h-10 w-10 text-green-600" />
+              </div>
+              <h3 className="text-2xl font-extrabold text-gray-900 mb-2">Success!</h3>
+              <p className="text-gray-600 mb-8 font-medium">Your swap request has been sent to the seller.</p>
+              <button
+                onClick={() => setShowSuccessModal(false)}
+                className="w-full bg-[#108c4b] text-white py-4 rounded-xl font-bold text-lg hover:bg-green-700 transition-all shadow-lg shadow-green-100"
+              >
+                Close
               </button>
             </div>
           </div>

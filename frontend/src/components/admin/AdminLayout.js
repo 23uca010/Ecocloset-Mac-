@@ -3,7 +3,8 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { 
   BarChart3, Users, ShoppingBag, Repeat, 
   AlertTriangle, Tags, Settings, LogOut, 
-  Menu, X, Shield, Bell, Search, Heart
+  Menu, X, Shield, Bell, Search, Heart,
+  ShoppingCart, MessageSquare, PieChart
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -16,10 +17,12 @@ const AdminLayout = ({ children, activeTab, setActiveTab }) => {
     { id: 'overview', label: 'Dashboard', icon: <BarChart3 size={20} /> },
     { id: 'users', label: 'Users', icon: <Users size={20} /> },
     { id: 'listings', label: 'Listings', icon: <ShoppingBag size={20} /> },
-    { id: 'swaps', label: 'Swaps', icon: <Repeat size={20} /> },
-    { id: 'reports', label: 'Reports', icon: <AlertTriangle size={20} /> },
-    { id: 'categories', label: 'Categories', icon: <Tags size={20} /> },
+    { id: 'swaps', label: 'Swap Requests', icon: <Repeat size={20} /> },
     { id: 'donations', label: 'Donations', icon: <Heart size={20} /> },
+    { id: 'orders', label: 'Orders', icon: <ShoppingCart size={20} /> },
+    { id: 'messages', label: 'Messages', icon: <MessageSquare size={20} /> },
+    { id: 'reports', label: 'Reports', icon: <AlertTriangle size={20} /> },
+    { id: 'analytics', label: 'Analytics', icon: <PieChart size={20} /> },
   ];
 
   const handleLogout = async () => {
