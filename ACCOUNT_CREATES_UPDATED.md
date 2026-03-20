@@ -41,7 +41,6 @@ navigate('/sell-swap');
 3. **Redirect indicator** → "🔄 Auto-redirecting to Swap/Sell page in 2 seconds..."
 4. **Auto navigation** → Navigate to Swap/Sell page after 2 seconds
 
----
 
 ## 🌐 **Registration Flow**
 
