@@ -19,6 +19,7 @@ const StylishItems = () => {
   
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   
   // Filter States
@@ -48,7 +49,9 @@ const StylishItems = () => {
     const fetchItems = async () => {
       try {
         setLoading(true);
-        const response = await fetch('http://localhost:5000/api/items');
+        setError('');
+        const response = await fetch('http://localhost:5001/api/items');
+        if (!response.ok) throw new Error(`Server error: ${response.status}`);
         const data = await response.json();
         
         if (data.success) {
@@ -56,14 +59,15 @@ const StylishItems = () => {
             ...item,
             _id: item.id,
             type: item.listingType || 'sell',
-            price: parseFloat(item.price) || 0,
-            seller: item.owner_name || 'User',
-            image: item.image ? (item.image.startsWith('http') ? item.image : `http://localhost:5000/${item.image}`) : 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=600&q=80'
+            price: Number(item.price),
+            seller: item.owner_name || 'Community Member',
+            image: item.image ? (item.image.startsWith('http') ? item.image : `http://localhost:5001/${item.image}`) : 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=600&q=80'
           }));
           setItems(mappedItems);
         }
-      } catch (error) {
-        console.error('Error fetching stylish items:', error);
+      } catch (err) {
+        console.error('Error fetching items:', err);
+        setError('Could not load items. Please make sure the backend server is running.');
       } finally {
         setLoading(false);
       }
@@ -104,8 +108,20 @@ const StylishItems = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#f8f9fa] flex items-center justify-center">
+      <div className="min-h-screen bg-[#f8f9fa] flex flex-col items-center justify-center gap-4">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+        <p className="text-gray-500 font-medium">Loading items...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[#f8f9fa] flex flex-col items-center justify-center gap-4 px-4">
+        <div className="bg-red-50 border border-red-200 rounded-2xl p-8 max-w-md text-center">
+          <p className="text-red-700 font-bold text-lg mb-2">Connection Error</p>
+          <p className="text-red-600">{error}</p>
+        </div>
       </div>
     );
   }
@@ -259,7 +275,7 @@ const StylishItems = () => {
                       </div>
                       
                       <div className="flex items-end justify-between mt-6">
-                        <span className="text-[1.75rem] font-bold text-[#108c4b]">₹{item.price.toLocaleString('en-IN')}</span>
+                        <span className="text-[1.75rem] font-bold text-[#108c4b]">₹{Math.round(item.price)}</span>
                         <span className="text-sm font-medium text-gray-400 mb-1">by {item.seller}</span>
                       </div>
                     </div>
@@ -270,30 +286,18 @@ const StylishItems = () => {
             
             {filteredItems.length === 0 && (
                <div className="bg-white rounded-[2rem] p-16 text-center border border-gray-100 mt-4">
-                 <h3 className="text-xl font-bold text-gray-900 mb-2">No matching items</h3>
-                 <p className="text-gray-500">Try adjusting your filters or search query.</p>
+                 <h3 className="text-xl font-bold text-gray-900 mb-2">
+                   {items.length === 0 ? '🌿 No items listed yet' : 'No matching items'}
+                 </h3>
+                 <p className="text-gray-500">
+                   {items.length === 0
+                     ? 'Be the first to list something! Head to Sell/Swap to add your first item.'
+                     : 'Try adjusting your filters or search query.'}
+                 </p>
                </div>
             )}
           </div>
         </div>
-      </div>
-
-       {/* Floating Quick Actions Menu */}
-      <div className="fixed bottom-8 right-8 z-50">
-         <div className="bg-white p-3 rounded-2xl shadow-2xl border border-gray-100 flex-col gap-2 w-48 hidden md:flex">
-            <Link to="/browse" className="flex items-center gap-3 w-full py-3 px-4 bg-green-50 text-green-700 rounded-xl hover:bg-green-100 transition-colors font-semibold shadow-sm">
-               <Search className="h-5 w-5" /> Browse Items
-            </Link>
-            <Link to="/sell-swap" className="flex items-center gap-3 w-full py-3 px-4 bg-blue-50 text-blue-700 rounded-xl hover:bg-blue-100 transition-colors font-semibold shadow-sm">
-               <Plus className="h-5 w-5" /> Add Listing
-            </Link>
-            <Link to="/donate" className="flex items-center gap-3 w-full py-3 px-4 bg-red-50 text-red-700 rounded-xl hover:bg-red-100 transition-colors font-semibold shadow-sm">
-               <Heart className="h-5 w-5" /> Donate
-            </Link>
-            <Link to="/cart" className="flex items-center gap-3 w-full py-3 px-4 bg-orange-50 text-orange-700 rounded-xl hover:bg-orange-100 transition-colors font-semibold shadow-sm border-none text-left">
-               <ShoppingCart className="h-5 w-5" /> My Cart
-            </Link>
-         </div>
       </div>
 
     </div>

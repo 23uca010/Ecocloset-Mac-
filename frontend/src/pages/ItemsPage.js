@@ -23,6 +23,7 @@ const ItemsPage = () => {
   const { addToCart } = useCart();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState('');
   const [viewMode, setViewMode] = useState('grid');
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -50,105 +51,33 @@ const ItemsPage = () => {
     { value: 'popular', label: 'Most Popular' }
   ];
 
-  const sampleItems = [
-    {
-      id: 1,
-      title: 'Vintage Denim Jacket',
-      price: 45.99,
-      originalPrice: 89.99,
-      image: 'https://images.unsplash.com/photo-1576871344422-2218d1d9e9c?w=400&h=300&fit=crop',
-      category: 'Outerwear',
-      condition: 'Good',
-      size: 'M',
-      type: 'sell',
-      rating: 4.5,
-      reviews: 23,
-      seller: 'Sarah M.',
-      sellerAvatar: 'https://images.unsplash.com/photo-1494790108755-2616b612c5a7?w=40&h=40&fit=crop&crop=face',
-      location: 'New York, NY',
-      listed: '2 days ago',
-      description: 'Classic vintage denim jacket in excellent condition. Perfect for layering and adds a timeless touch to any outfit.'
-    },
-    {
-      id: 2,
-      title: 'Floral Summer Dress',
-      price: 32.50,
-      originalPrice: 65.00,
-      image: 'https://images.unsplash.com/photo-1572804013427-75d4628b2cba?w=400&h=300&fit=crop',
-      category: 'Dresses',
-      condition: 'Like New',
-      size: 'S',
-      type: 'sell',
-      rating: 4.8,
-      reviews: 15,
-      seller: 'Emma L.',
-      sellerAvatar: 'https://images.unsplash.com/photo-1544005173-66ddc4aee555?w=40&h=40&fit=crop&crop=face',
-      location: 'Los Angeles, CA',
-      listed: '1 day ago',
-      description: 'Beautiful floral dress perfect for summer occasions. Lightweight fabric with vibrant colors.'
-    },
-    {
-      id: 3,
-      title: 'Sustainable Cotton T-Shirt',
-      price: 24.99,
-      image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=300&fit=crop',
-      category: 'Tops',
-      condition: 'New',
-      size: 'L',
-      type: 'sell',
-      rating: 4.2,
-      reviews: 8,
-      seller: 'Mike R.',
-      sellerAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face',
-      location: 'Austin, TX',
-      listed: '3 hours ago',
-      description: 'Eco-friendly cotton t-shirt made from sustainable materials. Comfortable and stylish.'
-    },
-    {
-      id: 4,
-      title: 'Handcrafted Leather Bag',
-      price: 78.00,
-      originalPrice: 120.00,
-      image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a81?w=400&h=300&fit=crop',
-      category: 'Accessories',
-      condition: 'Good',
-      size: 'One Size',
-      type: 'sell',
-      rating: 4.9,
-      reviews: 31,
-      seller: 'Lisa K.',
-      sellerAvatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&crop=face',
-      location: 'Portland, OR',
-      listed: '5 days ago',
-      description: 'Handcrafted leather bag with plenty of storage space. Durable and fashionable.'
-    }
-  ];
-
   useEffect(() => {
     const fetchItems = async () => {
       try {
         setLoading(true);
+        setFetchError('');
         const response = await fetch('http://localhost:5001/api/items');
+        if (!response.ok) throw new Error(`Server error: ${response.status}`);
         const data = await response.json();
         
         if (data.success) {
-          // Map backend listingType to frontend type for consistency
           const mappedItems = data.data.map(item => ({
             ...item,
-            type: item.listingType || 'sell', // Default to sell if not specified
-            price: parseFloat(item.price) || 0,
-            rating: 4.5, // Mock rating for now
+            type: item.listingType || 'sell',
+            price: Number(item.price),
+            rating: 4.5,
             reviews: 0,
-            seller: 'Eco User', // Mock seller for now
+            seller: item.owner_name || 'Eco User',
             sellerAvatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=40&h=40&fit=crop',
-            location: 'Community', // Mock location for now
-            listed: 'Just now'
+            location: item.location || 'Community',
+            listed: 'Listed recently',
+            image: item.image ? (item.image.startsWith('http') ? item.image : `http://localhost:5001/${item.image}`) : null
           }));
-          console.log('Fetched items:', mappedItems);
           setItems(mappedItems);
         }
       } catch (error) {
         console.error('Error fetching items:', error);
+        setFetchError('Could not load items. Please make sure the backend server is running.');
       } finally {
         setLoading(false);
       }
@@ -409,18 +338,25 @@ const ItemsPage = () => {
           <div className="flex items-center justify-between mb-8">
             <div>
               <h2 className="text-3xl font-bold text-gray-900 mb-2">Featured Items</h2>
-              <p className="text-gray-600">Handpicked sustainable fashion pieces from our community</p>
+              <p className="text-gray-600">Latest sustainable fashion pieces from our community</p>
             </div>
-            <button className="text-green-600 hover:text-green-700 font-semibold text-lg flex items-center">
-              View All
-              <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4-4m4 4l-4-4" />
-              </svg>
-            </button>
           </div>
+
+          {fetchError && (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
+              <p className="text-red-700 font-medium">{fetchError}</p>
+            </div>
+          )}
           
+          {!fetchError && items.slice(0, 4).length === 0 && !loading && (
+            <div className="text-center py-12 bg-gray-50 rounded-xl">
+              <Package className="h-10 w-10 text-gray-400 mx-auto mb-3" />
+              <p className="text-gray-600">No featured items yet. Be the first to list something!</p>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {sampleItems.slice(0, 4).map((item) => (
+            {items.slice(0, 4).map((item) => (
               <div key={item.id} className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group">
                 <div className="relative">
                   <img

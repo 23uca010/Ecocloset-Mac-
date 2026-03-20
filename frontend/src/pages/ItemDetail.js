@@ -149,21 +149,18 @@ const ItemDetail = () => {
     setIsDeleting(true);
     setDeleteError('');
     try {
-      const response = await fetch(`http://localhost:5001/api/items/${id}`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      const response = await api.delete(`/items/${id}`, {
+        data: {
           user_id: user?.id,
           requester_id: user?.id,
           requester_role: user?.role || 'user',
-        }),
+        }
       });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || 'Failed to delete item');
+      if (!response.data.success) throw new Error(response.data.message || 'Failed to delete item');
       setShowDeleteModal(false);
       navigate('/browse');
     } catch (err) {
-      setDeleteError(err.message || 'Could not delete item. Please try again.');
+      setDeleteError(err.response?.data?.message || err.message || 'Could not delete item. Please try again.');
       setIsDeleting(false);
     }
   };

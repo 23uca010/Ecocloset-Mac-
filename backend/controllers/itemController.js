@@ -51,7 +51,7 @@ const createItem = (req, res) => {
     const info = db.prepare(`
       INSERT INTO items (user_id, title, brand, price, description, category, size, color, condition, listingType, image, status)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(req.userId || user_id, title, brand, price, description, category, size, color, condition, listingType, image, status);
+    `).run(req.userId || user_id, title, brand, Number(price), description, category, size, color, condition, listingType, image, status);
 
     res.status(201).json({
       success: true,

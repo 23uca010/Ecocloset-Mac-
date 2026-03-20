@@ -21,43 +21,28 @@ const ModernHome = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [featuredItems, setFeaturedItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [stats, setStats] = useState({
-    totalItems: 0, totalUsers: 0, itemsSwapped: 0, co2Saved: 0
-  });
-
   useEffect(() => {
     const loadFeaturedItems = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/items');
+        const response = await fetch('http://localhost:5001/api/items');
         const data = await response.json();
         if (response.ok && data.success) {
           const mapped = data.data.slice(0, 8).map(item => ({
             ...item,
             image: item.image
-              ? (item.image.startsWith('http') ? item.image : `http://localhost:5000/${item.image}`)
+              ? (item.image.startsWith('http') ? item.image : `http://localhost:5001/${item.image}`)
               : 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=600&q=80'
           }));
           setFeaturedItems(mapped);
         }
       } catch (error) {
         console.error('Error loading featured items:', error);
-      }
-    };
-
-    const loadStats = async () => {
-      try {
-        const response = await fetch('http://localhost:5000/api/stats');
-        const data = await response.json();
-        if (response.ok && data.success) setStats(data.data);
-      } catch (error) {
-        console.error('Error loading stats:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
     loadFeaturedItems();
-    loadStats();
   }, []);
 
   const handleSearch = (e) => {
@@ -123,26 +108,6 @@ const ModernHome = () => {
                 </div>
               ))}
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Stats Bar ── */}
-      <section className="bg-[#108c4b] py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-white text-center">
-            {[
-              { label: 'Items Available', value: (stats.totalItems ?? 0).toLocaleString(), icon: Package },
-              { label: 'Active Users', value: (stats.totalUsers ?? 0).toLocaleString(), icon: Users },
-              { label: 'Items Swapped', value: (stats.itemsSwapped ?? 0).toLocaleString(), icon: Recycle },
-              { label: 'kg CO₂ Saved', value: (stats.co2Saved ?? 0).toLocaleString(), icon: Leaf },
-            ].map((stat) => (
-              <div key={stat.label} className="flex flex-col items-center gap-1">
-                <stat.icon className="h-6 w-6 text-green-200 mb-1" />
-                <div className="text-3xl font-extrabold">{isLoading ? '—' : stat.value}</div>
-                <div className="text-green-200 text-sm font-medium">{stat.label}</div>
-              </div>
-            ))}
           </div>
         </div>
       </section>

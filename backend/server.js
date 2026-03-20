@@ -61,7 +61,7 @@ db.exec(`
         user_id INTEGER,
         title TEXT,
         brand TEXT,
-        price INTEGER,
+        price REAL,
         description TEXT,
         category TEXT,
         size TEXT,
@@ -214,6 +214,46 @@ messageColumnsToAdd.forEach(col => {
 });
 
 console.log("Migrations complete.");
+
+// Migration: Change items.price from INTEGER to REAL for exact decimal handling
+try {
+    const tableInfo = db.prepare("PRAGMA table_info(items)").all();
+    const priceCol = tableInfo.find(col => col.name === 'price');
+    if (priceCol && priceCol.type.toUpperCase() === 'INTEGER') {
+        console.log("Migrating items table price column to REAL...");
+        db.transaction(() => {
+            // 1. Create temporary table with REAL price
+            db.exec(`
+                CREATE TABLE items_new (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER,
+                    title TEXT,
+                    brand TEXT,
+                    price REAL,
+                    description TEXT,
+                    category TEXT,
+                    size TEXT,
+                    color TEXT,
+                    condition TEXT,
+                    listingType TEXT,
+                    image TEXT,
+                    status TEXT DEFAULT 'pending',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY(user_id) REFERENCES users(id)
+                )
+            `);
+            // 2. Copy data
+            db.exec("INSERT INTO items_new SELECT * FROM items");
+            // 3. Drop old table
+            db.exec("DROP TABLE items");
+            // 4. Rename new table
+            db.exec("ALTER TABLE items_new RENAME TO items");
+        })();
+        console.log("Migrated items table price to REAL successfully.");
+    }
+} catch (e) {
+    console.error("Error migrating items price column:", e.message);
+}
 
 // Initialize Default Admin Account
 const adminEmail = 'admin@gmail.com';

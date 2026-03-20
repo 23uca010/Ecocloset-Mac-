@@ -142,7 +142,7 @@ const SellSwap = () => {
       formDataToSend.append('brand', formData.brand);
       formDataToSend.append('condition', formData.condition);
       formDataToSend.append('listingType', formData.type);
-      formDataToSend.append('price', (formData.type === 'sell' || formData.type === 'both') ? formData.price : 0);
+      formDataToSend.append('price', (formData.type === 'sell' || formData.type === 'both') ? Number(formData.price) : 0);
       
       if (previewImages.length > 0 && previewImages[0].file) {
         formDataToSend.append('image', previewImages[0].file);
@@ -163,7 +163,7 @@ const SellSwap = () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
       
       setTimeout(() => {
-        navigate('/items');
+        navigate('/browse');
       }, 2000);
       
     } catch (error) {
@@ -205,7 +205,7 @@ const SellSwap = () => {
             <CheckCircle className="h-6 w-6 text-[#108c4b] mr-4 shrink-0 mt-0.5" />
             <div>
               <h3 className="text-lg font-bold text-[#108c4b] mb-1">Item Listed Successfully!</h3>
-              <p className="text-[#108c4b]/80 font-medium">Your item has been listed and will be visible to other users. Redirecting to your items...</p>
+              <p className="text-[#108c4b]/80 font-medium">Your item has been listed and is now visible in the Browse page for everyone. Redirecting to Browse...</p>
             </div>
           </div>
         )}
