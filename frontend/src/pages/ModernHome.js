@@ -5,6 +5,7 @@ import {
   Gift, Star, ShoppingCart, Package, TrendingUp, Shirt
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { formatItemPrice } from '../utils/formatters';
 
 const CATEGORIES = [
   { name: 'Tops', emoji: '👕', color: 'from-rose-400 to-pink-500', bg: 'bg-rose-50', text: 'text-rose-700' },
@@ -202,8 +203,7 @@ const ModernHome = () => {
                         <p className="text-xs text-gray-500 mb-3">{item.category}{item.size ? ` • Size ${item.size}` : ''}</p>
                         <div className="flex items-center justify-between">
                           <span className="text-lg font-extrabold text-[#108c4b]">
-                            {item.listingType === 'sell' ? `₹${(item.price || 0).toLocaleString('en-IN')}` : 
-                             item.listingType === 'swap' ? 'Swap' : 'Free'}
+                            {formatItemPrice(item)}
                           </span>
                           <div className="flex items-center gap-1">
                             <Star className="h-3.5 w-3.5 text-yellow-400 fill-current" />

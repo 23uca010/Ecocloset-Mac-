@@ -142,7 +142,7 @@ const SellSwap = () => {
       formDataToSend.append('brand', formData.brand);
       formDataToSend.append('condition', formData.condition);
       formDataToSend.append('listingType', formData.type);
-      formDataToSend.append('price', (formData.type === 'sell' || formData.type === 'both') ? Number(formData.price) : 0);
+      formDataToSend.append('price', (formData.type === 'sell' || formData.type === 'both') ? Number(formData.price) : '');
       
       if (previewImages.length > 0 && previewImages[0].file) {
         formDataToSend.append('image', previewImages[0].file);

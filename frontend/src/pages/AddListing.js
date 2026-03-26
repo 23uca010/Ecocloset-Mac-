@@ -166,11 +166,12 @@ const AddListing = () => {
     setIsSubmitting(true);
     
     try {
-      // Prepare data for JSON sending as per user instructions
+      // Only include a numeric price for items being sold; leave null for swap/donation
+      const rawPrice = formData.price !== '' ? Number(formData.price) : null;
       const submissionData = {
         title: formData.title,
         brand: formData.brand,
-        price: formData.price || 0,
+        price: formData.type === 'sell' ? rawPrice : null,
         description: formData.description,
         category: formData.category,
         size: formData.size,

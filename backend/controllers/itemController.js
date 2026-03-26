@@ -48,10 +48,13 @@ const createItem = (req, res) => {
     // Make listings active immediately so they show up in Browse
     const status = 'active';
 
+    // Only store a numeric price for sell/both types; store NULL for swap/donate so ₹0 never appears
+    const parsedPrice = (price !== null && price !== undefined && price !== '') ? Number(price) : null;
+
     const info = db.prepare(`
       INSERT INTO items (user_id, title, brand, price, description, category, size, color, condition, listingType, image, status)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(req.userId || user_id, title, brand, Number(price), description, category, size, color, condition, listingType, image, status);
+    `).run(req.userId || user_id, title, brand, parsedPrice, description, category, size, color, condition, listingType, image, status);
 
     res.status(201).json({
       success: true,

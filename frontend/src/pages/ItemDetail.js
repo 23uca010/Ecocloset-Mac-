@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { Heart, ArrowLeft, MapPin, Sparkles, Star, Tag, MessageCircle, Send, ShoppingCart, ShoppingBag, X, Trash2, AlertTriangle, CheckCircle2 } from 'lucide-react';
-import { formatCurrency } from '../utils/formatters';
+import { formatCurrency, formatItemPrice } from '../utils/formatters';
 
 const ItemDetail = () => {
   const { id } = useParams();
@@ -23,6 +23,7 @@ const ItemDetail = () => {
   const [selectedUserItem, setSelectedUserItem] = useState(null);
   const [isSubmittingSwap, setIsSubmittingSwap] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [swapError, setSwapError] = useState('');
 
   useEffect(() => {
     fetchItemDetail();
@@ -80,29 +81,43 @@ const ItemDetail = () => {
   };
 
   const handleSwapRequest = async () => {
+    // Inline validation — no alert()
     if (!selectedUserItem) {
-      alert('Please select an item to swap');
+      setSwapError('Please select one of your items to offer for this swap.');
       return;
     }
 
+    setSwapError('');
+    setIsSubmittingSwap(true);
     try {
-      setIsSubmittingSwap(true);
       await api.post('/swaps', {
         itemOfferedId: Number(selectedUserItem.id),
         itemRequestedId: Number(id),
         message: swapMessage
       });
-      
+
+      // Reset and show success
       setShowSwapModal(false);
       setSelectedUserItem(null);
       setSwapMessage('');
+      setSwapError('');
       setShowSuccessModal(true);
     } catch (error) {
       console.error('Swap request error:', error);
-      alert(error.response?.data?.message || 'Failed to send swap request. Please check if both items are specified.');
+      setSwapError(
+        error.response?.data?.message ||
+        'Failed to send swap request. Please try again.'
+      );
     } finally {
       setIsSubmittingSwap(false);
     }
+  };
+
+  const closeSwapModal = () => {
+    setShowSwapModal(false);
+    setSelectedUserItem(null);
+    setSwapMessage('');
+    setSwapError('');
   };
 
   const toggleLike = async () => {
@@ -261,7 +276,7 @@ const ItemDetail = () => {
             <h1 className="text-3xl lg:text-4xl font-extrabold text-gray-900 mb-4 leading-tight">{item.title}</h1>
             
             <div className="text-4xl font-extrabold text-[#108c4b] mb-6">
-              {formatCurrency(item.price)}
+              {formatItemPrice(item)}
             </div>
 
             <div className="flex flex-wrap items-center gap-4 mb-8">
@@ -426,95 +441,140 @@ const ItemDetail = () => {
         )}
 
         {/* Swap Modal */}
-         {showSwapModal && (
+        {showSwapModal && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
             <div className="bg-white rounded-[2rem] max-w-lg w-full p-8 shadow-2xl relative">
-              <button 
-                onClick={() => { setShowSwapModal(false); setSelectedUserItem(null); }} 
-                className="absolute top-6 right-6 text-gray-400 hover:text-gray-900"
+              {/* Close button */}
+              <button
+                onClick={closeSwapModal}
+                className="absolute top-6 right-6 text-gray-400 hover:text-gray-900 transition-colors"
+                aria-label="Close swap modal"
               >
-                 <X className="h-6 w-6"/>
+                <X className="h-6 w-6" />
               </button>
-              
-              <h3 className="text-2xl font-extrabold text-gray-900 mb-2">Request Swap</h3>
-              <p className="text-gray-600 mb-6 font-medium">Select one of your items to offer for this swap.</p>
-              
-              {(() => {
-                // Simplified: Show ALL user items as per requirements
-                const displayItems = userItems || [];
-                
-                console.log('DEBUG: Items available for selection in modal:', displayItems);
 
-                if (displayItems.length > 0) {
-                  return (
-                    <div className="space-y-3 max-h-64 overflow-y-auto mb-6 pr-2">
-                      {displayItems.map(userItem => (
-                        <div 
-                          key={userItem.id} 
-                          onClick={() => setSelectedUserItem(userItem)}
-                          className={`border-2 rounded-2xl p-4 cursor-pointer transition-all flex items-center ${
-                            selectedUserItem?.id === userItem.id 
-                              ? 'border-indigo-600 bg-indigo-50 shadow-sm' 
-                              : 'border-gray-100 hover:border-gray-300'
-                          }`}
-                        >
-                            <div className="h-16 w-16 rounded-xl bg-gray-100 mr-4 overflow-hidden border border-gray-100 shrink-0">
-                              <img
-                                src={userItem.image ? `http://localhost:5001/${userItem.image.replace(/\\/g, '/')}` : 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=150&q=80'}
-                                alt={userItem.title}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <div className="flex justify-between items-start">
-                                <p className="font-bold text-gray-900 truncate">{userItem.title}</p>
-                                <span className="text-[8px] px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded font-bold uppercase">{userItem.listingType || 'item'}</span>
-                              </div>
-                              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{userItem.category} • {userItem.size}</p>
-                            </div>
-                            {selectedUserItem?.id === userItem.id && (
-                              <div className="ml-3 text-indigo-600">
-                                <CheckCircle2 size={24} />
-                              </div>
-                            )}
+              <h3 className="text-2xl font-extrabold text-gray-900 mb-1">Request Swap</h3>
+              <p className="text-gray-500 font-medium mb-6">Select one of your items to offer in exchange.</p>
+
+              {/* Inline API / validation error banner */}
+              {swapError && (
+                <div className="mb-4 flex items-start gap-2 bg-red-50 border border-red-200 text-red-700 text-sm font-medium rounded-xl px-4 py-3">
+                  <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+                  <span>{swapError}</span>
+                </div>
+              )}
+
+              {/* User items list */}
+              {userItems.length > 0 ? (
+                <div className="space-y-3 max-h-64 overflow-y-auto mb-6 pr-1">
+                  {userItems.map(userItem => {
+                    const isSelected = selectedUserItem?.id === userItem.id;
+                    const imgSrc = userItem.image
+                      ? (userItem.image.startsWith('http')
+                          ? userItem.image
+                          : `http://localhost:5001/${userItem.image.replace(/\\/g, '/')}`)
+                      : 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=150&q=80';
+
+                    return (
+                      <div
+                        key={userItem.id}
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => { setSelectedUserItem(userItem); setSwapError(''); }}
+                        onKeyDown={e => e.key === 'Enter' && setSelectedUserItem(userItem)}
+                        className={`border-2 rounded-2xl p-4 cursor-pointer transition-all flex items-center select-none ${
+                          isSelected
+                            ? 'border-indigo-600 bg-indigo-50 shadow-sm'
+                            : 'border-gray-100 hover:border-gray-300 hover:bg-gray-50'
+                        }`}
+                      >
+                        <div className="h-16 w-16 rounded-xl bg-gray-100 mr-4 overflow-hidden border border-gray-100 shrink-0">
+                          <img
+                            src={imgSrc}
+                            alt={userItem.title}
+                            className="w-full h-full object-cover"
+                            onError={e => { e.target.src = 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=150&q=80'; }}
+                          />
                         </div>
-                      ))}
-                    </div>
-                  );
-                } else {
-                  return (
-                    <div className="text-center py-8 bg-gray-50 rounded-2xl mb-6 border border-gray-100">
-                      <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
-                         <Tag className="h-8 w-8 text-gray-400" />
+                        <div className="min-w-0 flex-1">
+                          <div className="flex justify-between items-start gap-2">
+                            <p className="font-bold text-gray-900 truncate">{userItem.title}</p>
+                            <span className="text-[10px] px-2 py-0.5 bg-gray-100 text-gray-500 rounded-full font-bold uppercase shrink-0">
+                              {userItem.listingType || 'item'}
+                            </span>
+                          </div>
+                          <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mt-0.5">
+                            {userItem.category}{userItem.size ? ` • ${userItem.size}` : ''}
+                          </p>
+                        </div>
+                        {isSelected && (
+                          <div className="ml-3 text-indigo-600 shrink-0">
+                            <CheckCircle2 size={22} />
+                          </div>
+                        )}
                       </div>
-                      <p className="text-gray-600 font-medium mb-4 px-6">You don't have any items available for swap.</p>
-                      <Link to="/sell-swap" className="bg-[#108c4b] text-white px-6 py-3 rounded-xl font-bold hover:bg-green-700 transition-colors inline-block">
-                        Add an Item
-                      </Link>
-                    </div>
-                  );
-                }
-              })()}
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="text-center py-8 bg-gray-50 rounded-2xl mb-6 border border-gray-100">
+                  <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
+                    <Tag className="h-8 w-8 text-gray-400" />
+                  </div>
+                  <p className="text-gray-600 font-medium mb-4 px-6">You don't have any items listed yet.</p>
+                  <Link
+                    to="/sell-swap"
+                    className="bg-[#108c4b] text-white px-6 py-3 rounded-xl font-bold hover:bg-green-700 transition-colors inline-block"
+                    onClick={closeSwapModal}
+                  >
+                    Add an Item
+                  </Link>
+                </div>
+              )}
 
-              <div className="mb-6">
-                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">
-                  Message to Seller (optional)
+              {/* Optional message */}
+              <div className="mb-5">
+                <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">
+                  Message to Seller <span className="normal-case font-normal">(optional)</span>
                 </label>
                 <textarea
                   value={swapMessage}
-                  onChange={(e) => setSwapMessage(e.target.value)}
-                  placeholder="Hi, I'd love to swap my item for yours! I think they would be a great match..."
-                  className="w-full bg-gray-50 border border-gray-200 rounded-2xl p-5 text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all"
-                  rows="3"
+                  onChange={e => setSwapMessage(e.target.value)}
+                  placeholder="Hi, I'd love to swap my item for yours!"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-2xl p-4 text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:outline-none focus:bg-white transition-all resize-none"
+                  rows={3}
                 />
               </div>
 
+              {/* Hint when no item selected */}
+              {!selectedUserItem && userItems.length > 0 && !swapError && (
+                <p className="text-center text-xs text-gray-400 font-medium mb-3">
+                  ↑ Select an item above to enable the button
+                </p>
+              )}
+
+              {/* Submit button */}
               <button
+                type="button"
                 onClick={handleSwapRequest}
-                className="w-full bg-indigo-600 text-white py-4 rounded-[1.25rem] font-black text-lg hover:bg-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-indigo-100"
-                disabled={!selectedUserItem || isSubmittingSwap}
+                disabled={isSubmittingSwap || userItems.length === 0}
+                className="w-full bg-indigo-600 text-white py-4 rounded-[1.25rem] font-black text-lg transition-all shadow-xl shadow-indigo-100
+                  hover:bg-indigo-700 active:scale-[0.98]
+                  disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
               >
-                {isSubmittingSwap ? 'SENDING REQUEST...' : 'SEND SWAP REQUEST'}
+                {isSubmittingSwap ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                    </svg>
+                    Sending Request...
+                  </span>
+                ) : !selectedUserItem ? (
+                  'Select an Item First'
+                ) : (
+                  'Send Swap Request'
+                )}
               </button>
             </div>
           </div>

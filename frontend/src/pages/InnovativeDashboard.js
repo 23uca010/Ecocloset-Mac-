@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { formatItemPrice } from '../utils/formatters';
 import { 
   ShoppingBag, Heart, Plus, TrendingUp, Users, Gift, X,
   Trophy, Leaf, Recycle, Activity, User, Package, Star,
@@ -20,8 +21,49 @@ const InnovativeDashboard = () => {
   const [showWelcome, setShowWelcome] = useState(false);
   const [welcomeUsername, setWelcomeUsername] = useState('');
 
+  // ── Declare fetch function FIRST so useEffect can reference it ───────────
+  const fetchDashboardData = useCallback(async () => {
+    if (!user?.id) {
+      console.warn('[Dashboard] fetchDashboardData called without a valid user.id — skipping');
+      setLoading(false);
+      return;
+    }
+    console.log('[Dashboard] Fetching data for user.id:', user.id);
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await api.get(`/dashboard/user/${user.id}`);
+      console.log('[Dashboard] Response status:', response.status);
+      const { success, data, message, detail } = response.data;
+      if (!success) throw new Error(detail || message || 'Server returned unsuccessful response');
+      setStats(data.stats || { totalItems: 0, activeSwaps: 0, completedSwaps: 0, donations: 0, ecoScore: 0 });
+      setRecentItems(data.recentItems || []);
+      setRecentSwaps(data.recentSwaps || []);
+      const mappedAchievements = (data.achievements || []).map(ach => ({
+        ...ach,
+        icon: ICON_MAP[ach.icon] || Trophy,
+        unlocked: true
+      }));
+      setAchievements(mappedAchievements);
+    } catch (error) {
+      console.error('[Dashboard] Fetch error:', error);
+      const msg =
+        error.response?.data?.detail ||
+        error.response?.data?.message ||
+        error.message ||
+        'Something went wrong. Please try again.';
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  }, [user?.id, api]);
+
   useEffect(() => {
-    if (user?.id) fetchDashboardData();
+    if (user?.id) {
+      fetchDashboardData();
+    } else {
+      setLoading(false);
+    }
     const loginSuccess = localStorage.getItem('loginSuccess');
     const username = localStorage.getItem('username');
     if (loginSuccess === 'true' && username) {
@@ -31,31 +73,7 @@ const InnovativeDashboard = () => {
       localStorage.removeItem('username');
       setTimeout(() => setShowWelcome(false), 5000);
     }
-  }, [user]);
-
-  const fetchDashboardData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await api.get(`dashboard/user/${user.id}`);
-      const { success, data, message } = response.data;
-      if (!success) throw new Error(message || 'Failed to fetch dashboard data');
-      setStats(data.stats);
-      setRecentItems(data.recentItems);
-      setRecentSwaps(data.recentSwaps);
-      const mappedAchievements = data.achievements.map(ach => ({
-        ...ach,
-        icon: ICON_MAP[ach.icon] || Trophy,
-        unlocked: true
-      }));
-      setAchievements(mappedAchievements);
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error);
-      setError(error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [user?.id, fetchDashboardData]);
 
   if (loading) {
     return (
@@ -72,8 +90,11 @@ const InnovativeDashboard = () => {
         <div className="bg-white border border-red-200 rounded-2xl p-8 max-w-md text-center shadow-sm">
           <X className="h-10 w-10 text-red-400 mx-auto mb-4" />
           <h2 className="text-xl font-bold text-gray-900 mb-2">Couldn't load dashboard</h2>
-          <p className="text-gray-500 mb-6 text-sm">{error}</p>
-          <button onClick={fetchDashboardData} className="bg-[#108c4b] text-white px-6 py-2.5 rounded-xl hover:bg-[#0d7a40] transition-colors font-semibold text-sm">
+          <p className="text-gray-500 mb-6 text-sm break-words">{error}</p>
+          <button
+            onClick={() => { setError(null); setLoading(true); fetchDashboardData(); }}
+            className="bg-[#108c4b] text-white px-6 py-2.5 rounded-xl hover:bg-[#0d7a40] transition-colors font-semibold text-sm"
+          >
             Try Again
           </button>
         </div>
@@ -182,7 +203,7 @@ const InnovativeDashboard = () => {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold text-gray-900">Item Listed</p>
-                          <p className="text-xs text-gray-500 truncate">{item.title} • ₹{item.price}</p>
+                          <p className="text-xs text-gray-500 truncate">{item.title} • {formatItemPrice(item)}</p>
                         </div>
                         <div className="flex items-center gap-1 text-xs text-gray-400 shrink-0">
                           <Calendar className="h-3 w-3" />

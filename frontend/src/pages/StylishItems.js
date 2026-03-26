@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
+import { formatItemPrice } from '../utils/formatters';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { 
@@ -59,7 +60,8 @@ const StylishItems = () => {
             ...item,
             _id: item.id,
             type: item.listingType || 'sell',
-            price: Number(item.price),
+            // Keep price as null for swap/donate so formatItemPrice works correctly
+            price: item.price !== null && item.price !== undefined ? Number(item.price) : null,
             seller: item.owner_name || 'Community Member',
             image: item.image ? (item.image.startsWith('http') ? item.image : `http://localhost:5001/${item.image}`) : 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=600&q=80'
           }));
@@ -275,7 +277,7 @@ const StylishItems = () => {
                       </div>
                       
                       <div className="flex items-end justify-between mt-6">
-                        <span className="text-[1.75rem] font-bold text-[#108c4b]">₹{Math.round(item.price)}</span>
+                        <span className="text-[1.75rem] font-bold text-[#108c4b]">{formatItemPrice(item)}</span>
                         <span className="text-sm font-medium text-gray-400 mb-1">by {item.seller}</span>
                       </div>
                     </div>

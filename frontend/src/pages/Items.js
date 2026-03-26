@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { Search, Filter, Grid, List, Heart, Eye, MapPin, ShoppingCart } from 'lucide-react';
+import { formatItemPrice } from '../utils/formatters';
 
 const Items = () => {
   const { api, isAuthenticated } = useAuth();
@@ -136,7 +137,7 @@ const Items = () => {
         </div>
         <div className="p-4 border-t">
           <div className="flex items-center justify-between">
-            <span className="text-lg font-bold text-green-600">₹{item.price?.toFixed(2) || '0.00'}</span>
+            <span className="text-lg font-bold text-green-600">{formatItemPrice(item)}</span>
             <button
               onClick={() => addToCart(item)}
               className="flex items-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
@@ -209,7 +210,7 @@ const Items = () => {
         </div>
         <div className="border-t pt-3 mt-3">
           <div className="flex items-center justify-between">
-            <span className="text-lg font-bold text-green-600">₹{item.price?.toFixed(2) || '0.00'}</span>
+            <span className="text-lg font-bold text-green-600">{formatItemPrice(item)}</span>
             <button
               onClick={() => addToCart(item)}
               className="flex items-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"

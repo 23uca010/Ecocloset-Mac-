@@ -1,2 +1,7 @@
 [2026-03-17T23:18:23.626Z] Module swapController.js loaded
 [2026-03-20T17:45:08.362Z] Module swapController.js loaded
+[2026-03-26T18:20:53.319Z] Module swapController.js loaded
+[2026-03-26T18:57:50.920Z] Entering createSwapRequest
+[2026-03-26T18:57:50.923Z] DEBUG: Creating swap request: itemRequestedId=2, itemOfferedId=4, userId=2, message=""
+SCHEMA CHECK: Columns in swaps table: id, user_a_id, user_b_id, item_a_id, item_b_id, message, status, created_at
+SUCCESS: Swap request created with ID 1
