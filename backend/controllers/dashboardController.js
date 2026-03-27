@@ -132,6 +132,37 @@ const getUserDashboardData = (req, res) => {
             console.warn('[Dashboard] Could not fetch rewards:', rewardErr.message);
         }
 
+        // 8. Inbox requests (swap/sell requests sent TO this user)
+        let inboxRequests = [];
+        let inboxPendingCount = 0;
+        try {
+            inboxRequests = db.prepare(`
+                SELECT
+                    s.id,
+                    s.status,
+                    s.type,
+                    s.message,
+                    s.created_at,
+                    u.id    AS sender_id,
+                    u.name  AS sender_name,
+                    u.email AS sender_email,
+                    ib.id    AS item_id,
+                    ib.title AS item_title,
+                    ib.image AS item_image,
+                    ia.title AS offered_item_title
+                FROM swaps s
+                JOIN users u  ON s.user_a_id = u.id
+                JOIN items ib ON s.item_b_id  = ib.id
+                LEFT JOIN items ia ON s.item_a_id = ia.id
+                WHERE s.user_b_id = ?
+                ORDER BY s.created_at DESC
+                LIMIT 20
+            `).all(userId) || [];
+            inboxPendingCount = inboxRequests.filter(r => r.status === 'pending').length;
+        } catch (inboxErr) {
+            console.warn('[Dashboard] Could not fetch inbox requests:', inboxErr.message);
+        }
+
         console.log('[Dashboard] Sending success response for userId:', userId);
         return res.status(200).json({
             success: true,
@@ -152,10 +183,13 @@ const getUserDashboardData = (req, res) => {
                     activeSwaps:     activeSwaps,
                     completedSwaps:  completedSwaps,
                     donations:       donations,
-                    ecoScore:        user.eco_score || 0
+                    ecoScore:        user.eco_score || 0,
+                    inboxPending:    inboxPendingCount
                 },
                 recentItems,
                 recentSwaps,
+                inboxRequests,
+                inboxPendingCount,
                 achievements,
                 badges
             }

@@ -24,6 +24,9 @@ const ItemDetail = () => {
   const [isSubmittingSwap, setIsSubmittingSwap] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [swapError, setSwapError] = useState('');
+  const [isSubmittingSell, setIsSubmittingSell] = useState(false);
+  const [sellSuccess, setSellSuccess] = useState(false);
+  const [sellError, setSellError] = useState('');
 
   useEffect(() => {
     fetchItemDetail();
@@ -77,6 +80,28 @@ const ItemDetail = () => {
     } catch (error) {
       console.error('Error fetching user items:', error);
       setUserItems([]);
+    }
+  };
+
+  // Send a sell / purchase request (no item to offer)
+  const handleSellRequest = async () => {
+    setSellError('');
+    setIsSubmittingSell(true);
+    try {
+      await api.post('/swaps', {
+        itemRequestedId: Number(id),
+        type: 'sell',
+        message: `I'd like to purchase your item.`
+      });
+      setSellSuccess(true);
+      setTimeout(() => setSellSuccess(false), 4000);
+    } catch (error) {
+      setSellError(
+        error.response?.data?.message ||
+        'Failed to send purchase request. Please try again.'
+      );
+    } finally {
+      setIsSubmittingSell(false);
     }
   };
 
@@ -322,14 +347,54 @@ const ItemDetail = () => {
                   <ShoppingBag className="h-5 w-5" />
                   <span>Add to Cart</span>
                 </button>
-                
-                {isAuthenticated && user && item.user_id !== user.id && item.status === 'available' && (
+
+                {/* Sell success / error feedback */}
+                {sellSuccess && (
+                  <div className="flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 text-sm font-semibold rounded-xl px-4 py-3">
+                    <CheckCircle2 className="h-4 w-4 shrink-0" />
+                    Purchase request sent! The owner will respond from their dashboard.
+                  </div>
+                )}
+                {sellError && (
+                  <div className="flex items-center justify-between gap-2 bg-red-50 border border-red-200 text-red-700 text-sm font-medium rounded-xl px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <AlertTriangle className="h-4 w-4 shrink-0" />
+                      {sellError}
+                    </div>
+                    <button onClick={() => setSellError('')}><X className="h-4 w-4" /></button>
+                  </div>
+                )}
+
+                {/* Purchase (sell) request — for items listed for sale */}
+                {isAuthenticated && user && item.user_id !== user.id && (
+                  (item.listingType === 'sell' || item.listingType === 'both' || item.type === 'sell') && (
+                    <button
+                      onClick={handleSellRequest}
+                      disabled={isSubmittingSell || sellSuccess}
+                      className="w-full bg-purple-600 text-white py-4 rounded-xl hover:bg-purple-700 transition-colors flex items-center justify-center space-x-2 font-bold text-lg shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      {isSubmittingSell ? (
+                        <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                        </svg>
+                      ) : (
+                        <ShoppingCart className="h-5 w-5" />
+                      )}
+                      <span>{isSubmittingSell ? 'Sending...' : sellSuccess ? 'Request Sent!' : 'Request to Purchase'}</span>
+                    </button>
+                  )
+                )}
+
+                {/* Swap request */}
+                {isAuthenticated && user && item.user_id !== user.id && item.status === 'available' &&
+                  (item.listingType === 'swap' || item.listingType === 'both' || item.listingType === 'swap_only') && (
                   <button
                     onClick={() => setShowSwapModal(true)}
                     className="w-full bg-white text-gray-900 border-2 border-gray-200 py-4 rounded-xl hover:bg-gray-50 transition-colors flex items-center justify-center space-x-2 font-bold text-lg"
                   >
                     <Tag className="h-5 w-5" />
-                    <span>Make an Offer / Request Swap</span>
+                    <span>Request Swap</span>
                   </button>
                 )}
             </div>

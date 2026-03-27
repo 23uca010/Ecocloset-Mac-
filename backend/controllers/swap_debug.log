@@ -5,3 +5,12 @@
 [2026-03-26T18:57:50.923Z] DEBUG: Creating swap request: itemRequestedId=2, itemOfferedId=4, userId=2, message=""
 SCHEMA CHECK: Columns in swaps table: id, user_a_id, user_b_id, item_a_id, item_b_id, message, status, created_at
 SUCCESS: Swap request created with ID 1
+[2026-03-27T18:50:56.774Z] Module swapController.js loaded
+[2026-03-27T18:58:51.529Z] Entering createSwapRequest
+[2026-03-27T18:58:51.531Z] DEBUG: Creating swap request: itemRequestedId=1, itemOfferedId=2, userId=3, message="swapit"
+SCHEMA CHECK: Columns in swaps table: id, user_a_id, user_b_id, item_a_id, item_b_id, message, status, created_at
+SUCCESS: Swap request created with ID 1
+[2026-03-27T19:15:26.729Z] Entering createSwapRequest
+[2026-03-27T19:15:26.735Z] DEBUG: Creating swap request: itemRequestedId=1, itemOfferedId=2, userId=3, message=""
+SCHEMA CHECK: Columns in swaps table: id, user_a_id, user_b_id, item_a_id, item_b_id, message, status, created_at
+SUCCESS: Swap request created with ID 2

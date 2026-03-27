@@ -213,6 +213,26 @@ messageColumnsToAdd.forEach(col => {
     }
 });
 
+// Migration: Add 'type' column to swaps table for swap/sell differentiation
+try {
+    db.exec(`ALTER TABLE swaps ADD COLUMN type TEXT DEFAULT 'swap'`);
+    console.log("Added column: type to swaps");
+} catch (e) {
+    if (!e.message.includes('duplicate column name')) {
+        console.error("Error adding type column to swaps:", e.message);
+    }
+}
+
+// Migration: Add 'sell_item_id' column to swaps table (item buyer wants to purchase)
+try {
+    db.exec(`ALTER TABLE swaps ADD COLUMN sell_item_id INTEGER`);
+    console.log("Added column: sell_item_id to swaps");
+} catch (e) {
+    if (!e.message.includes('duplicate column name')) {
+        console.error("Error adding sell_item_id column to swaps:", e.message);
+    }
+}
+
 console.log("Migrations complete.");
 
 // Migration: Change items.price from INTEGER to REAL for exact decimal handling
